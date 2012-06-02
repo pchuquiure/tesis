@@ -5,7 +5,7 @@ from django.conf import settings
 from django.views.generic.simple import direct_to_template
 
 urlpatterns = patterns('',
-    (r'^web/', include('web.urls')),
+    (r'^', include('web.urls')),
     
 )
 
