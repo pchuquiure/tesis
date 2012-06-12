@@ -1,0 +1,18 @@
+{ 
+text: '.',
+children: [{
+    text:'Peticiones',
+    expanded: false,
+    children:[]
+},{
+    text:'Pruebas',
+    children:[{
+        text:'Menu Demo',
+        id:'center',
+        leaf:true
+    }]
+},{
+    text:'Defectos',
+    children:[]
+}]
+}
