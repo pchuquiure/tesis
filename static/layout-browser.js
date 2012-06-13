@@ -1,6 +1,6 @@
-Ext.Loader.setConfig({enabled: true});
+//Ext.Loader.setConfig({enabled: true});
 
-Ext.Loader.setPath('Ext.ux', 'static/ux');
+//Ext.Loader.setPath('Ext.ux', 'static/ux');
 
 Ext.require([
     'Ext.tip.QuickTipManager',
@@ -13,15 +13,15 @@ Ext.require([
     'Ext.tree.*',
     'Ext.selection.*',
     'Ext.tab.Panel',
-    'Ext.ux.layout.Center'  
+    //'Ext.ux.layout.Center'  
 ]);
 
 Ext.onReady(function(){
  
-    Ext.tip.QuickTipManager.init();
-
-    var detailEl;
+    //Ext.tip.QuickTipManager.init();
+    
     var viewport;
+    var cPanel;
 
     var layoutBase = [];
     Ext.Object.each(getBasicLayouts(), function(name, ly) {
@@ -34,12 +34,9 @@ Ext.onReady(function(){
 
     Ext.create('Ext.data.Store', {
         storeId:'simpsonsStore',
-        fields:['name', 'email', 'phone'],
+        fields:['nombre', 'descripcion', 'fecha_creacion'],
         data:{'items':[
-            { 'name': 'Lisa',  "email":"lisa@simpsons.com",  "phone":"555-111-1224"  },
-            { 'name': 'Bart',  "email":"bart@simpsons.com",  "phone":"555-222-1234" },
-            { 'name': 'Homer', "email":"home@simpsons.com",  "phone":"555-222-1244"  },
-            { 'name': 'Marge', "email":"marge@simpsons.com", "phone":"555-222-1254"  }
+            { 'nombre': 'Daniel',  "descripcion":"Bla bla ",  "fecha_creacion":"02-05-2012"  }            
         ]},
         proxy: {
             type: 'memory',
@@ -50,19 +47,37 @@ Ext.onReady(function(){
         }
     });
 
-    var grid = Ext.create('Ext.grid.Panel', {
-        title: 'Simpsons',
+    /**
+    * Grid para peticiones
+    */
+    var gridPe = Ext.create('Ext.grid.Panel', {
+        id: 'grid-pe',
+        title: 'Peticiones',
         store: Ext.data.StoreManager.lookup('simpsonsStore'),
         columns: [
-            { header: 'Name',  dataIndex: 'name' },
-            { header: 'Email', dataIndex: 'email', flex: 1 },
-            { header: 'Phone', dataIndex: 'phone' }
+            { header: 'Nombre',  dataIndex: 'nombre' },
+            { header: 'Descripcion', dataIndex: 'descripcion', flex: 1 },
+            { header: 'Fecha de creación', dataIndex: 'fecha_creacion', flex: 1 },
+            { header: 'Estado', dataIndex: 'estado', flex: 1 },
+            { header: 'Aplicativo', dataIndex: 'aplicativo', flex: 1 },
+            { header: 'Canal', dataIndex: 'canal' }
         ],
-        height: 200,
-        width: 400        
+        height: '100%',
+        width: '100%',
+        tbar: ["Acciones:",{
+            text:"Nuevo"
+        },'-',{
+           text:"Eliminar"
+        },'-',{
+           text:"Actualizar"
+        },'-',{
+           text:"Enviar por correo"
+        }]      
     });
 
-
+    /*
+    * Contenedor Central (CENTER).
+    */
     var contentPanel = {
          id: 'content-panel',
          region: 'center',
@@ -72,7 +87,7 @@ Ext.onReady(function(){
          border: false, 
          items: layoutBase
     };
-     
+
     var store = Ext.create('Ext.data.TreeStore', {
         root: {
             expanded: true
@@ -84,7 +99,18 @@ Ext.onReady(function(){
         }
     });
 
-     var treePanel = Ext.create('Ext.tree.Panel', {
+    var storePr = Ext.create('Ext.data.TreeStore', {
+        root: {
+            expanded: true
+        }
+        ,
+        proxy: {
+            type: 'ajax',
+            url: 'static/tree-pr.json'
+        }
+    });
+
+    var treePanel = Ext.create('Ext.tree.Panel', {
         id: 'tree-panel',
         title: 'Menu',
         region:'north',
@@ -95,20 +121,40 @@ Ext.onReady(function(){
         autoScroll: true,
         listeners : {            
             itemclick: {
-                fn: function(self, store_record, html_element, node_index, event) {
-                    //contentPanel.add(grid);
-                                 
-                    viewport.layout.centerRegion.add(grid);                    
-                    viewport.layout.centerRegion.doLayout();
-                    //viewport.refresh();
-                    
-                    console.log(viewport.layout.centerRegion);
-                    //contentPanel.items.append(grid);
+                fn: function(self, record, element, index, event) {                    
+                    if (record.data.id) {
+                        cPanel.layout.setActiveItem(record.data.id);
+                    }
                 }
             }
         },
         store: store
     });
+
+    var treePr = Ext.create('Ext.tree.Panel', {
+        id: 'tree-pr',
+        title: 'Pruebas',
+        region:'north',
+        split: true,
+        height: 360,
+        minSize: 150,
+        rootVisible: false,
+        autoScroll: true,        
+        store: storePr
+    });
+
+
+    /*treePanel.getSelectionModel().on('select', function(selModel, record) {
+        if (record.get('leaf')) {
+            Ext.getCmp('content-panel').layout.setActiveItem(record.getId() + '-panel');
+            if (!detailEl) {
+                var bd = Ext.getCmp('details-panel').body;
+                bd.update('').setStyle('background','#fff');
+                detailEl = bd.createChild();
+            }
+            //detailEl.hide().update(Ext.getDom(record.getId() + '-details').innerHTML).slideIn('l', {stopAnimation:true,duration: 200});
+        }
+    });*/
  
     viewport = Ext.create('Ext.Viewport', {
         layout: 'border',
@@ -136,4 +182,11 @@ Ext.onReady(function(){
         ],
         renderTo: Ext.getBody()
     });
+
+    /**
+    * Agregamos las grillas y otros componentes que se visualizará.
+    */
+    cPanel = Ext.getCmp('content-panel');
+    cPanel.add(gridPe);
+    cPanel.add(treePr);
 });

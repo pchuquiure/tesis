@@ -1,0 +1,23 @@
+{ 
+text: '.',
+children: [{
+    text:'Carpeta',    
+    expanded: false,
+    children:[{
+        text:'File',        
+        leaf:true
+    }]
+},{
+    text:'Carpeta 2',
+    children:[{
+        text:'File',        
+        leaf:true
+    },{
+        text:'File',        
+        leaf:true
+    }]
+},{
+    text:'Carpeta 3',
+    children:[]
+}]
+}

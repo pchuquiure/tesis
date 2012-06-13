@@ -2,13 +2,17 @@
 text: '.',
 children: [{
     text:'Peticiones',
+    id:'grid-pe',
     expanded: false,
     children:[]
 },{
     text:'Pruebas',
     children:[{
-        text:'Menu Demo',
-        id:'center',
+        text:'Pruebas',        
+        leaf:true
+    },{
+        text:'Ejecucion de pruebas',
+        id:'tree-pr',      
         leaf:true
     }]
 },{
