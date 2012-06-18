@@ -11,7 +11,7 @@ urlpatterns = patterns('',
     # (r'^la-autentica/ubigeo/', include('ubigeo.urls')),
 
     # admin URLs
-    url(r'^([^/]+)/([^/]+)/export_js/$', 'admin.export_js'),
+    #url(r'^([^/]+)/([^/]+)/export_js/$', 'admin.export_js'),
     (r'', include(admin.site.urls)),
 )
 

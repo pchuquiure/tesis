@@ -1,25 +1,17 @@
-//Ext.Loader.setConfig({enabled: true});
-
-//Ext.Loader.setPath('Ext.ux', 'static/ux');
-
 Ext.require([
     'Ext.tip.QuickTipManager',
     'Ext.container.Viewport',
     'Ext.layout.*',
     'Ext.form.Panel',
-    'Ext.form.Label',
+    'Ext.form.Label',    
     'Ext.grid.*',
     'Ext.data.*',
     'Ext.tree.*',
     'Ext.selection.*',
-    'Ext.tab.Panel',
-    //'Ext.ux.layout.Center'  
+    'Ext.tab.Panel'
 ]);
 
 Ext.onReady(function(){
- 
-    //Ext.tip.QuickTipManager.init();
-    
     var viewport;
     var cPanel;
 
@@ -30,49 +22,69 @@ Ext.onReady(function(){
     
     Ext.Object.each(getCustomLayouts(), function(name, ly){
         layoutBase.push(ly);
-    });    
-
-    Ext.create('Ext.data.Store', {
-        storeId:'simpsonsStore',
-        fields:['nombre', 'descripcion', 'fecha_creacion'],
-        data:{'items':[
-            { 'nombre': 'Daniel',  "descripcion":"Bla bla ",  "fecha_creacion":"02-05-2012"  }            
-        ]},
-        proxy: {
-            type: 'memory',
-            reader: {
-                type: 'json',
-                root: 'items'
-            }
-        }
     });
 
+    Ext.define('PeticionModel',{
+        extend: 'Ext.data.Model',
+        fields: [            
+            {name: 'aplicativo', mapping: 'aplicativo.label'},
+            {name: 'canal', mapping: 'canal.label'},
+            {name: 'usuario', mapping: 'usuario.label'},
+            'nombre',
+            'descripcion',
+            'fecha_creacion',
+            'imagen',
+            'estado'
+        ]
+    });
+
+    var peticionStore = Ext.create('Ext.data.Store', {        
+        model:'PeticionModel',
+        proxy: {
+            type: 'ajax',
+            url: '/get_peticion'            
+        }
+    });
+    peticionStore.load();
     /**
     * Grid para peticiones
     */
     var gridPe = Ext.create('Ext.grid.Panel', {
         id: 'grid-pe',
         title: 'Peticiones',
-        store: Ext.data.StoreManager.lookup('simpsonsStore'),
+        store: peticionStore,
         columns: [
             { header: 'Nombre',  dataIndex: 'nombre' },
             { header: 'Descripcion', dataIndex: 'descripcion', flex: 1 },
             { header: 'Fecha de creación', dataIndex: 'fecha_creacion', flex: 1 },
             { header: 'Estado', dataIndex: 'estado', flex: 1 },
-            { header: 'Aplicativo', dataIndex: 'aplicativo', flex: 1 },
+            { header: 'Usuario', dataIndex: 'usuario', flex: 1 },
+            { header: 'Aplicativo', dataIndex: 'aplicativo', flex: 1 },            
             { header: 'Canal', dataIndex: 'canal' }
         ],
         height: '100%',
         width: '100%',
         tbar: ["Acciones:",{
-            text:"Nuevo"
+            text:"Nuevo",
+            handler: function() {                
+                windows.nuevaPeticion.show();
+            }
         },'-',{
-           text:"Eliminar"
+            text:"Eliminar",
+            handler: function() {
+                alert('Selecciona a item');
+            }
         },'-',{
-           text:"Actualizar"
-        },'-',{
-           text:"Enviar por correo"
-        }]      
+            text:"Actualizar",
+            handler: function() {
+                peticionStore.load();
+            }
+        }],
+        listeners : {
+            itemdblclick: function(self, record, number, index, eOpts) {                          
+                windows.peticiones.show();
+            }
+        }    
     });
 
     /*
@@ -91,8 +103,7 @@ Ext.onReady(function(){
     var store = Ext.create('Ext.data.TreeStore', {
         root: {
             expanded: true
-        }
-        ,
+        },
         proxy: {
             type: 'ajax',
             url: 'static/tree-data.json'
@@ -102,8 +113,7 @@ Ext.onReady(function(){
     var storePr = Ext.create('Ext.data.TreeStore', {
         root: {
             expanded: true
-        }
-        ,
+        },
         proxy: {
             type: 'ajax',
             url: 'static/tree-pr.json'
@@ -141,21 +151,11 @@ Ext.onReady(function(){
         rootVisible: false,
         autoScroll: true,        
         store: storePr
-    });
-
-
-    /*treePanel.getSelectionModel().on('select', function(selModel, record) {
-        if (record.get('leaf')) {
-            Ext.getCmp('content-panel').layout.setActiveItem(record.getId() + '-panel');
-            if (!detailEl) {
-                var bd = Ext.getCmp('details-panel').body;
-                bd.update('').setStyle('background','#fff');
-                detailEl = bd.createChild();
-            }
-            //detailEl.hide().update(Ext.getDom(record.getId() + '-details').innerHTML).slideIn('l', {stopAnimation:true,duration: 200});
-        }
-    });*/
+    });    
  
+    /**
+    * Contenedor ViewPort
+    */
     viewport = Ext.create('Ext.Viewport', {
         layout: 'border',
         autoRender: true,
@@ -164,9 +164,10 @@ Ext.onReady(function(){
             xtype: 'box',
             id: 'header',
             region: 'north',
-            html: '<h1> Proyecto :: Tesis</h1>',
+            html: '<h1>Proyecto :: Tesis</h1>',
             height: 30
-        },{
+        },
+        {
             layout: 'border',
             id: 'layout-browser',
             region:'west',
