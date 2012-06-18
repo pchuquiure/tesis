@@ -1,14 +1,5 @@
 var peticionStore;
 
-Ext.define('EstadoModel',{
-    extend: 'Ext.data.Model',
-    fields: [                        
-        'tamano',
-        'file',
-        'fecha_creacion'          
-    ]
-});
-
 Ext.define('GeneralModel',{
     extend: 'Ext.data.Model',
     fields: [                        
@@ -17,8 +8,8 @@ Ext.define('GeneralModel',{
     ]
 });
 
-var estadoStore = Ext.create('Ext.data.Store', {    
-    model:'EstadoModel',
+var estadoStore = Ext.create('Ext.data.Store', {
+    fields: ['label','value'],     
     data : [
         {"value":"nuevo", "label":"Nuevo"},
         {"value":"pendiente", "label":"Pendiente"},
