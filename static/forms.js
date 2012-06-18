@@ -1,16 +1,33 @@
 var peticionStore;
 
-var estadoStore = Ext.create('Ext.data.Store', {
-    fields: ['label', 'value'],
+Ext.define('EstadoModel',{
+    extend: 'Ext.data.Model',
+    fields: [                        
+        'tamano',
+        'file',
+        'fecha_creacion'          
+    ]
+});
+
+Ext.define('GeneralModel',{
+    extend: 'Ext.data.Model',
+    fields: [                        
+        'label',
+        'id'        
+    ]
+});
+
+var estadoStore = Ext.create('Ext.data.Store', {    
+    model:'EstadoModel',
     data : [
         {"value":"nuevo", "label":"Nuevo"},
         {"value":"pendiente", "label":"Pendiente"},
-        {"value":"cerrado", "label":"Cerrado"}        
+        {"value":"cerrado", "label":"Cerrado"}
     ]
 });
 
 var canalStore = Ext.create('Ext.data.Store', {
-    fields: ['label', 'id'],    
+    model:'GeneralModel',  
     proxy: {
         type: 'ajax',
         url: '/get_canal'
@@ -18,7 +35,7 @@ var canalStore = Ext.create('Ext.data.Store', {
 });
 
 var aplicativoStore = Ext.create('Ext.data.Store', {
-    fields: ['label', 'id'],    
+    model:'GeneralModel',  
     proxy: {
         type: 'ajax',
         url: '/get_aplicativo'
@@ -26,7 +43,7 @@ var aplicativoStore = Ext.create('Ext.data.Store', {
 });
 
 var usuarioStore = Ext.create('Ext.data.Store', {
-    fields: ['label', 'id'],    
+    model:'GeneralModel',
     proxy: {
         type: 'ajax',
         url: '/get_usuario'
@@ -35,6 +52,7 @@ var usuarioStore = Ext.create('Ext.data.Store', {
 
 var forms = {
     peticiones: Ext.create('Ext.form.Panel', {
+        id:'peticionesFormEdit',
         height: 255,
         width: 570,
         bodyBorder:false,
@@ -44,7 +62,11 @@ var forms = {
         },
         bodyPadding: 10,
         frameHeader: false,
+        model:'PeticionModel',
         titleCollapse: false,
+        fieldDefaults: {
+            bindToModel: true
+        },
         items: [
             {
                 xtype: 'container',
@@ -138,7 +160,22 @@ var forms = {
             text: 'Guardar',
             margin:'0 5 0 0',
             handler: function() {
-                
+                var form = Ext.getCmp('peticionesFormEdit').getForm();
+                if(form.isValid()) {                    
+                    form.submit({
+                        formBind: true,
+                        waitMsg:'Guardando...',
+                        url: '/guarda_peticion',               
+                        success: function(form,action) {
+                            //form.reset();                            
+                            peticionStore.load();                          
+                            windows.nuevaPeticion.hide();
+                        },
+                        failure: function(form,action){
+                            //this.up('form').getForm().reset();
+                        }
+                    });
+                }
             }
         },{
             text: 'Cerrar',
@@ -247,6 +284,12 @@ var forms = {
                         fieldLabel: 'Imagen',
                         allowBlank:false,
                         labelAlign: 'top'
+                    },
+                    {
+                        xtype: 'hiddenfield',
+                        id:'form-peticion-id',             
+                        name: 'id',                
+                        allowBlank:false                            
                     }
                 ]
             }
@@ -263,8 +306,10 @@ var forms = {
                         url: '/guarda_peticion',               
                         success: function(form,action) {
                             form.reset();                            
-                            peticionStore.load();                            
-                            windows.nuevaPeticion.hide();
+                            peticionStore.load();
+                            var selected = Ext.getCmp('grid-pe').getSelectionModel().selected;
+                            var id = selected.items[0].data.id;
+                            Ext.getCmp('form-peticion-id').setValue(id);                            
                         },
                         failure: function(form,action){
                             this.up('form').getForm().reset();
@@ -280,5 +325,61 @@ var forms = {
                 this.up('form').getForm().reset();
             }
         }]
+    }),
+    peticionesFormAttach: Ext.create('Ext.form.Panel', {        
+        id:'peticionesFormAttach',
+        height: 100,
+        width: 565,
+        bodyBorder:false,        
+        layout: {
+            type: 'column'
+        },
+        bodyPadding: 10,
+        frameHeader: false,
+        titleCollapse: false,
+        items: [
+            {
+                xtype: 'filefield',
+                width: 545,
+                name: 'File',
+                fieldLabel: 'Agregar otro',
+                allowBlank:false,
+                labelAlign: 'top',
+
+            },
+            {
+                xtype: 'hiddenfield',
+                id:'form-attach-id',             
+                name: 'id',                
+                allowBlank:false                            
+            }
+        ],
+        buttons: [{
+            text: 'Guardar',
+            margin:'0 5 0 0',
+            handler: function(){
+                var form = Ext.getCmp('peticionesFormAttach').getForm();
+                if(form.isValid()) {        
+                    form.submit({
+                        formBind: true,
+                        waitMsg:'Guardando...',
+                        url: '/guarda_peticion_attach',               
+                        success: function(form,action) {
+                            form.reset();
+                            var selected = Ext.getCmp('grid-pe').getSelectionModel().selected;
+                            var id = selected.items[0].data.id;
+                            Ext.getCmp('form-attach-id').setValue(id);
+                            peticionAttachStore.load({params: {
+                                id: id
+                            }});                            
+                        },
+                        failure: function(form,action){
+                            form.reset();
+                        }
+                    });
+                }                
+            }
+        }]
     })
+
 }

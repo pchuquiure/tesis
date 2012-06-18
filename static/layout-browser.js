@@ -38,6 +38,8 @@ Ext.onReady(function(){
         ]
     });
 
+    
+
     peticionStore = Ext.create('Ext.data.Store', {        
         model:'PeticionModel',
         proxy: {
@@ -45,7 +47,8 @@ Ext.onReady(function(){
             url: '/get_peticion'            
         }
     });
-    peticionStore.load();
+    peticionStore.load();    
+
     /**
     * Grid para peticiones
     */
@@ -72,18 +75,22 @@ Ext.onReady(function(){
         },'-',{
             text:"Eliminar",
             handler: function() {
-                if (confirm("¿Desea eliminar el registro?")) {
-                    var selected = gridPe.getSelectionModel().selected;
-                    var id = selected.items[0].data.id;
-                    Ext.Ajax.request({
-                        url: '/delete_peticion',
-                        params: {
-                            id: id
-                        },
-                        success: function(response) {                            
-                            peticionStore.load();
-                        }
-                    });
+                if (gridPe.getSelectionModel().selected.length > 0) {
+                    if (confirm("¿Desea eliminar el registro?")) {
+                        var selected = gridPe.getSelectionModel().selected;
+                        var id = selected.items[0].data.id;
+                        Ext.Ajax.request({
+                            url: '/delete_peticion',
+                            params: {
+                                id: id
+                            },
+                            success: function(response) {
+                                peticionStore.load();
+                            }
+                        });
+                    }
+                }  else {
+                    alert('Selecciona el item a eliminar');
                 }
             }
         },'-',{
@@ -93,8 +100,19 @@ Ext.onReady(function(){
             }
         }],
         listeners : {
-            itemdblclick: function(self, record, number, index, eOpts) {                          
+            itemdblclick: function(self, record, number, index, eOpts) {                
+                var form = Ext.getCmp('peticionesFormEdit');
+                form.loadRecord(record);
+                console.log(form);
                 windows.peticiones.show();
+                var selected = gridPe.getSelectionModel().selected;
+                var id = selected.items[0].data.id;
+                Ext.getCmp('form-peticion-id').setValue(id);
+                Ext.getCmp('form-attach-id').setValue(id);
+                gridPeAttach.store = peticionAttachStore;
+                gridPeAttach.getStore().load({params: {
+                    id: id
+                }});                
             }
         }    
     });

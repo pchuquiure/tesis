@@ -87,12 +87,11 @@ class Peticion(models.Model):
 
 class Adjunto(models.Model):    
     tamano = models.CharField(u'Tamano', blank=False, max_length=45)
-    imagen = models.ImageField('Imagen Equipo', max_length=45,
+    imagen = models.FileField('Archivo', max_length=255,
         upload_to='peticiones', null=True)
     fechaCreacion = models.DateTimeField(u'Fecha de creación', 
         auto_now_add=True)
     peticion = models.ForeignKey(Peticion)
-
 
 class CasoPeticion(models.Model):
     """ Caso por Peticion Model

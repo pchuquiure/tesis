@@ -7,12 +7,24 @@ var menu = {
         frame:false,        
         floating: false,        
         items: [{
-            text: 'Detalle'
+            text: 'Detalle',
+            handler: function() {                                
+                groupPeAttach.hide();
+                forms.peticiones.show();
+                
+            }
         },{
-            text: 'Datos Adjuntos'
+            text: 'Datos Adjuntos',
+            handler: function() {                                            
+                groupPeAttach.show();
+                forms.peticiones.hide();
+            }
+
         },{
             text: 'Defectos Vinculados',
-            disabled:true
+            handler: function() {
+                console.log("Click");
+            }
         }]
     })
 }
@@ -39,6 +51,7 @@ var windows = {
         ]
     }),
     peticiones: Ext.create('widget.window', {
+        id:'win-peticiones',
         height: 290,
         width: 785,
         closeAction: 'hide',
@@ -59,12 +72,12 @@ var windows = {
             collapsible: false,
             floatable: false,
             border:0,
-            items: [menu.peticiones]         
+            items: [menu.peticiones]      
         },
         {
             region: 'center',            
             border:0,
-            items: [forms.peticiones]
+            items: [forms.peticiones, groupPeAttach]
         }
         ]
     })

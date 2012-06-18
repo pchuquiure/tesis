@@ -80,10 +80,48 @@ def get_peticion(request):
     response = HttpResponse(json_obj, mimetype="application/json")    
     return response
 
+def get_peticion_attach(request):
+    json_str = []
+    id = request.GET.get('id', None)
+    adjuntos = Adjunto.objects.filter(peticion__pk=id)
+
+    for adjunto in adjuntos:        
+        json_str.append({
+            'id': adjunto.pk,
+            'tamano': adjunto.tamano,
+            'file': adjunto.imagen.name,
+            'fecha_creacion': str(adjunto.fechaCreacion)            
+        })
+    json_obj = json.dumps(json_str, sort_keys=True, indent=4)
+    response = HttpResponse(json_obj, mimetype="application/json")    
+    return response
+
+@csrf_exempt
+def guarda_peticion_attach(request):
+    if request.method.lower() == "post":
+        result = {'success':'true'}        
+        id = request.POST.get('id', None)     
+        imagen = request.FILES['File']
+
+        try:
+            adjunto = Adjunto()
+            adjunto.peticion_id = id
+            adjunto.tamano = imagen.size
+            adjunto.imagen = imagen
+            adjunto.save()
+        except Exception as e:
+            print e
+            result = {'success':'false'}
+
+        json_obj = json.dumps(result, indent=4)
+        response = HttpResponse(json_obj, mimetype='text/html') 
+        return response
+
 @csrf_exempt
 def guarda_peticion(request):
     if request.method.lower() == "post":
-        result = {'success':'true'}        
+        result = {'success':'true'}
+        id = request.POST.get('id', None)
         canal = request.POST.get('canal', None)
         aplicativo = request.POST.get('aplicativo', None)
         usuario = request.POST.get('usuario', None)
@@ -93,7 +131,10 @@ def guarda_peticion(request):
         imagen = request.FILES['imagen']
 
         try:
-            peticion = Peticion()
+            if id:
+                peticion = Peticion.objects.get(id=id)
+            else:
+                peticion = Peticion()                
             peticion.canal_id = canal
             peticion.usuario_id = usuario
             peticion.aplicativo_id = aplicativo
@@ -103,7 +144,7 @@ def guarda_peticion(request):
             peticion.imagen = imagen
             peticion.save()
         except Exception as e:
-            print e
+            print e           
             result = {'success':'false'}
 
         json_obj = json.dumps(result, indent=4)
