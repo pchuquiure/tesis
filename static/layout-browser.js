@@ -38,7 +38,7 @@ Ext.onReady(function(){
         ]
     });
 
-    var peticionStore = Ext.create('Ext.data.Store', {        
+    peticionStore = Ext.create('Ext.data.Store', {        
         model:'PeticionModel',
         proxy: {
             type: 'ajax',

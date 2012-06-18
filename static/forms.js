@@ -1,3 +1,5 @@
+var peticionStore;
+
 var estadoStore = Ext.create('Ext.data.Store', {
     fields: ['label', 'value'],
     data : [
@@ -148,6 +150,8 @@ var forms = {
         }]
     }),
     peticionesForm: Ext.create('Ext.form.Panel', {
+        name:'peticionesForm',
+        id:'peticionesForm',
         height: 255,
         width: 570,
         bodyBorder:false,        
@@ -251,11 +255,22 @@ var forms = {
             text: 'Guardar',
             margin:'0 5 0 0',
             handler: function(){
-                this.up('form').getForm().submit({
-                    url: '/guarda_peticion',
-                    submitEmptyText: false,
-                    waitMsg: 'Guardando...'
-                });
+                var form = Ext.getCmp('peticionesForm').getForm();
+                if(form.isValid()) {                    
+                    form.submit({
+                        formBind: true,
+                        waitMsg:'Guardando...',
+                        url: '/guarda_peticion',               
+                        success: function(form,action) {
+                            form.reset();                            
+                            peticionStore.load();                            
+                            windows.nuevaPeticion.hide();
+                        },
+                        failure: function(form,action){
+                            this.up('form').getForm().reset();
+                        }
+                    });
+                }                
             }
         },{
             text: 'Cerrar',

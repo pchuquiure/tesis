@@ -83,7 +83,7 @@ def get_peticion(request):
 @csrf_exempt
 def guarda_peticion(request):
     if request.method.lower() == "post":
-        result = "okay"        
+        result = {'success':'true'}        
         canal = request.POST.get('canal', None)
         aplicativo = request.POST.get('aplicativo', None)
         usuario = request.POST.get('usuario', None)
@@ -104,7 +104,8 @@ def guarda_peticion(request):
             peticion.save()
         except Exception as e:
             print e
-            result = "error"
+            result = {'success':'false'}
 
-        response = HttpResponse(result, mimetype="text/html")    
+        json_obj = json.dumps(result, indent=4)
+        response = HttpResponse(json_obj, mimetype='text/html') 
         return response
