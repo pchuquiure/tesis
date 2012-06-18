@@ -8,5 +8,7 @@ urlpatterns = patterns('web.views',
     url('^get_aplicativo$', 'get_aplicativo', name='get_aplicativo'),
     url('^get_usuario$', 'get_usuario', name='get_usuario'),
     url('^get_peticion$', 'get_peticion', name='get_peticion'),
-    url('^guarda_peticion$', 'guarda_peticion', name='guarda_peticion')    
+    url('^guarda_peticion$', 'guarda_peticion', name='guarda_peticion'),
+    url('^delete_peticion$', 'delete_peticion', name='delete_peticion'),
+    
 )

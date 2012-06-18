@@ -109,3 +109,17 @@ def guarda_peticion(request):
         json_obj = json.dumps(result, indent=4)
         response = HttpResponse(json_obj, mimetype='text/html') 
         return response
+
+@csrf_exempt
+def delete_peticion(request):
+    if request.method.lower() == "post":
+        result = {'success':'true'}   
+        id = request.POST.get('id', None)
+        try:
+            peticion = Peticion.objects.get(id=id)
+            peticion.delete()
+        except Exception as e:
+            result = {'success':'false'}
+        json_obj = json.dumps(result, indent=4)
+        response = HttpResponse(json_obj, mimetype='text/html') 
+        return response

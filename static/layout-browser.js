@@ -72,7 +72,19 @@ Ext.onReady(function(){
         },'-',{
             text:"Eliminar",
             handler: function() {
-                alert('Selecciona a item');
+                if (confirm("¿Desea eliminar el registro?")) {
+                    var selected = gridPe.getSelectionModel().selected;
+                    var id = selected.items[0].data.id;
+                    Ext.Ajax.request({
+                        url: '/delete_peticion',
+                        params: {
+                            id: id
+                        },
+                        success: function(response) {                            
+                            peticionStore.load();
+                        }
+                    });
+                }
             }
         },'-',{
             text:"Actualizar",
