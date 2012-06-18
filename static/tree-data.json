@@ -1,0 +1,22 @@
+{ 
+text: '.',
+children: [{
+    text:'Peticiones',
+    id:'grid-pe',
+    expanded: false,
+    children:[]
+},{
+    text:'Pruebas',
+    children:[{
+        text:'Pruebas',        
+        leaf:true
+    },{
+        text:'Ejecucion de pruebas',
+        id:'tree-pr',      
+        leaf:true
+    }]
+},{
+    text:'Defectos',
+    children:[]
+}]
+}
