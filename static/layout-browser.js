@@ -419,6 +419,9 @@ Ext.onReady(function(){
         }
     });
 
+
+
+
     var pbView = Ext.create('Ext.tab.Panel', {
         id:'pbView',              
         width : '100%',
