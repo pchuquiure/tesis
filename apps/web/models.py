@@ -106,6 +106,14 @@ class CasoPeticion(models.Model):
     peticion = models.ForeignKey(Peticion)
     caso_prueba = models.ForeignKey(CasoPrueba)
 
+class TipoDefecto(models.Model):
+    nombre = models.CharField(u'Nombre', blank=False, max_length=45)
+    fechaCreacion = models.DateTimeField(u'Fecha de creación', 
+        auto_now_add=True)
+
+    def __unicode__(self):
+        return u'%s' % (self.nombre)
+
 class Defecto(models.Model):
     """ Defecto Model
     ForeignKey: Peticion, Usuario
@@ -116,7 +124,7 @@ class Defecto(models.Model):
     descripcion = models.CharField(u'Descripción', max_length=200, 
         blank=False)
     estado = models.CharField(u'Estado', blank=False, max_length=45)
-    tipo = models.CharField(u'Tipo', blank=False, max_length=45)
+    tipo = models.ForeignKey(TipoDefecto)
     gravedad = models.CharField(u'Gravedad', blank=False, max_length=45)
     imagen = models.ImageField('Imagen Equipo', max_length=200,
         upload_to='defecto', null=True)

@@ -1,6 +1,8 @@
 var peticionStore;
 var defectoStore;
 var carpetaStore;
+var pbID;
+var resultFilterStore;
 
 Ext.define('GeneralModel',{
     extend: 'Ext.data.Model',
@@ -37,6 +39,15 @@ var tipoStore = Ext.create('Ext.data.Store', {
         {"value":"Otro", "label":"Otro"}
     ]
 });
+
+var tipoDefectoStore = Ext.create('Ext.data.Store', {
+    fields: ['label','value'],     
+    proxy: {
+        type: 'ajax',
+        url: '/get_tipo_defecto'
+    }
+});
+tipoDefectoStore.load();
 
 var gravedadStore = Ext.create('Ext.data.Store', {
     fields: ['label','value'],     
@@ -451,6 +462,7 @@ var forms = {
                     {
                         xtype: 'combobox',
                         name: 'estado',
+                        id:'cmbTipoDefecto',
                         displayField: 'label',
                         valueField: 'value',
                         editable:false,
@@ -466,7 +478,7 @@ var forms = {
                         editable:false,
                         fieldLabel: 'Tipo',
                         allowBlank:false,
-                        store:tipoStore
+                        store:tipoDefectoStore
                     }
                 ]
             },
@@ -610,12 +622,13 @@ var forms = {
                     {
                         xtype: 'combobox',
                         name: 'tipo',
+                        id:'cmbTipoDefecto',
                         displayField: 'label',
                         valueField: 'value',
                         editable:false,
                         fieldLabel: 'Tipo',
                         allowBlank:false,
-                        store:tipoStore
+                        store:tipoDefectoStore
                     }
                 ]
             },
@@ -903,6 +916,346 @@ var forms = {
                 this.up('form').getForm().reset();
             }
         }]
+    }),
+    pruebaForm: Ext.create('Ext.form.Panel', {
+        title:'Prueba',
+        id:'pruebaFormEdit',      
+        height: 120,
+        width: 570,
+        bodyBorder:false,        
+        border:0,
+        layout: {
+            type: 'column'
+        },
+        bodyPadding: 10,
+        frameHeader: false,
+        titleCollapse: false,
+        items: [
+            {
+                xtype: 'container',
+                height: 80,
+                width: 290,
+                items: [
+                    {
+                        xtype: 'textfield',
+                        name: 'nombre',
+                        fieldLabel: 'Nombre',
+                        allowBlank:false
+                    },
+                    {
+                        xtype: 'combobox',
+                        name: 'estado',
+                        displayField: 'label',
+                        valueField: 'value',
+                        editable:false,
+                        fieldLabel: 'Estado',
+                        allowBlank:false,
+                        store:estadoStore
+                    }
+                ]
+            },{
+                xtype: 'container',
+                height: 80,
+                width: 258,
+                items: [
+                    {
+                        xtype: 'combobox',
+                        name: 'usuario',
+                        id:'cmbUsuarioPrueba',
+                        fieldLabel: 'Usuario',
+                        displayField: 'label',
+                        valueField: 'id',
+                        editable:false,
+                        blankText:'Elige',
+                        allowBlank:false,
+                        store: usuarioStore
+                    },
+                    {
+                        xtype: 'combobox',
+                        name: 'tipo',
+                        displayField: 'label',
+                        valueField: 'value',
+                        editable:false,
+                        fieldLabel: 'Tipo',
+                        allowBlank:false,
+                        store:tipoStore
+                    },
+                    {
+                        xtype: 'textfield',
+                        name: 'ruta',                        
+                        fieldLabel: 'Ruta',
+                        allowBlank:false                        
+                    },
+                    {
+                        xtype: 'hiddenfield',
+                        id:'form-prueba-id',             
+                        name: 'id',                
+                        allowBlank:false                         
+                    }
+                ]
+            }
+        ],
+        buttons: [{
+            text: 'Guardar',
+            margin:'0 5 0 0',
+            handler: function(){
+                var form = Ext.getCmp('pruebaFormEdit').getForm();
+                if(form.isValid()) {                    
+                    form.submit({
+                        formBind: true,
+                        waitMsg:'Guardando...',
+                        url: '/guarda_prueba',               
+                        success: function(form,action) {                                                       
+                            //carpetaStore.load();
+                        },
+                        failure: function(form,action){
+                            this.up('form').getForm().reset();
+                        }
+                    });
+                }                
+            }
+        }]
+    }),
+    pprueba: Ext.create('Ext.form.Panel', { 
+        id:'ppruebaForm',      
+        height: 260,
+        width: 570,
+        bodyBorder:false,        
+        border:0,
+        layout: {
+            type: 'column'
+        },
+        bodyPadding: 10,
+        frameHeader: false,
+        titleCollapse: false,
+        items: [
+            {
+                xtype: 'container',
+                height: 30,
+                width: 290,
+                items: [
+                    {
+                        xtype: 'textfield',
+                        name: 'num_paso',
+                        fieldLabel: 'N° Paso',
+                        allowBlank:false
+                    }
+                ]
+            },
+            {
+                xtype: 'container',
+                height: 139,
+                width: 548,
+                items: [
+                    {
+                        xtype: 'textareafield',
+                        height: 59,
+                        width: 545,
+                        name: 'descripcion',
+                        fieldLabel: 'Descripción',
+                        allowBlank:false,
+                        labelAlign: 'top'
+                    },
+                    {
+                        xtype: 'textareafield',
+                        height: 59,
+                        width: 545,
+                        name: 'observaciones',
+                        fieldLabel: 'Observaciones',
+                        allowBlank:false,
+                        labelAlign: 'top'
+                    },
+                    {
+                        xtype: 'textareafield',
+                        height: 59,
+                        width: 545,
+                        name: 'esperado',
+                        fieldLabel: 'Esperado',
+                        allowBlank:false,
+                        labelAlign: 'top'
+                    },
+                    {
+                        xtype: 'hiddenfield',
+                        id:'form-prueba-id-p',      
+                        name: 'pid',                
+                        allowBlank:false
+                    }
+                ]
+            }
+        ],
+        buttons: [{
+            text: 'Guardar',
+            margin:'0 5 0 0',
+            handler: function(){
+                var form = Ext.getCmp('ppruebaForm').getForm();
+                if(form.isValid()) {                    
+                    form.submit({
+                        formBind: true,
+                        waitMsg:'Guardando...',
+                        url: '/guarda_pprueba',               
+                        success: function(form, action) {
+                            form.reset();                            
+                            ppruebaStore.load({params: {
+                                id: pbID
+                            }});
+                            Ext.getCmp('form-prueba-id-p').setValue(pbID);                                            
+                            windows.pasoprueba.hide();
+                        },
+                        failure: function(form, action){
+                            this.up('form').getForm().reset();
+                        }
+                    });
+                }                
+            }
+        },{
+            text: 'Cerrar',
+            margin:'0 15 0 0',
+            handler: function() {
+                windows.pasoprueba.hide();
+                this.up('form').getForm().reset();
+            }
+        }]
+    }),
+    ppruebaEdit: Ext.create('Ext.form.Panel', { 
+        id:'ppruebaFormEdit',      
+        height: 260,
+        width: 570,
+        bodyBorder:false,        
+        border:0,
+        layout: {
+            type: 'column'
+        },
+        bodyPadding: 10,
+        frameHeader: false,
+        titleCollapse: false,
+        items: [
+            {
+                xtype: 'container',
+                height: 30,
+                width: 290,
+                items: [
+                    {
+                        xtype: 'textfield',
+                        name: 'num_paso',
+                        fieldLabel: 'N° Paso',
+                        allowBlank:false
+                    }
+                ]
+            },
+            {
+                xtype: 'container',
+                height: 139,
+                width: 548,
+                items: [
+                    {
+                        xtype: 'textareafield',
+                        height: 59,
+                        width: 545,
+                        name: 'descripcion',
+                        fieldLabel: 'Descripción',
+                        allowBlank:false,
+                        labelAlign: 'top'
+                    },
+                    {
+                        xtype: 'textareafield',
+                        height: 59,
+                        width: 545,
+                        name: 'observaciones',
+                        fieldLabel: 'Observaciones',
+                        allowBlank:false,
+                        labelAlign: 'top'
+                    },
+                    {
+                        xtype: 'textareafield',
+                        height: 59,
+                        width: 545,
+                        name: 'esperado',
+                        fieldLabel: 'Esperado',
+                        allowBlank:false,
+                        labelAlign: 'top'
+                    },
+                    {
+                        xtype: 'hiddenfield',
+                        id:'form-pprueba-id',      
+                        name: 'id',                
+                        allowBlank:false
+                    }
+                ]
+            }
+        ],
+        buttons: [{
+            text: 'Guardar',
+            margin:'0 5 0 0',
+            handler: function(){
+                var form = Ext.getCmp('ppruebaFormEdit').getForm();
+                if(form.isValid()) {                    
+                    form.submit({
+                        formBind: true,
+                        waitMsg:'Guardando...',
+                        url: '/guarda_pprueba',               
+                        success: function(form, action) {
+                            //form.reset();                            
+                            ppruebaStore.load({params: {
+                                id: pbID
+                            }});                                                                        
+                            windows.pasopruebaEdit.hide();
+                        },
+                        failure: function(form, action){
+                            this.up('form').getForm().reset();
+                        }
+                    });
+                }                
+            }
+        },{
+            text: 'Cerrar',
+            margin:'0 15 0 0',
+            handler: function() {
+                windows.pasopruebaEdit.hide();
+                this.up('form').getForm().reset();
+            }
+        }]
+    }),
+    dfiltro: Ext.create('Ext.form.Panel', { 
+        id:'dfiltro-form',      
+        height: 250,
+        width: 200,
+        bodyBorder:false,        
+        border:0,
+        layout: {
+            type: 'column'
+        },
+        bodyPadding: 10,
+        frameHeader: false,
+        titleCollapse: false,
+        items: [
+            {
+                xtype: 'container',
+                height: 30,
+                width: 180,
+                items: [
+                    {
+                        xtype: 'combobox',
+                        name: 'canal',
+                        id: 'cmbCanalDFiltro',
+                        fieldLabel: 'Canal',
+                        displayField: 'label',
+                        valueField: 'id',
+                        editable:false,
+                        blankText:'Elige',
+                        allowBlank:false,
+                        labelAlign: 'top',
+                        store: canalStore,
+                        listeners: {
+                            change: function(self, value, oldValue, eOpts) {
+                                resultFilterStore.load({params: {
+                                    cid: value
+                                }});
+                            }
+                        }
+                    }
+                ]
+            }            
+        ]        
     })
 
 }

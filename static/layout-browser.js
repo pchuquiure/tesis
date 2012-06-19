@@ -13,8 +13,7 @@ Ext.require([
 
 Ext.onReady(function(){
     var viewport;
-    var cPanel;
-    var pbID;
+    var cPanel;    
 
     var layoutBase = [];
     Ext.Object.each(getBasicLayouts(), function(name, ly) {
@@ -30,10 +29,10 @@ Ext.onReady(function(){
         fields: [            
             {name: 'peticion', mapping: 'peticion.label'},            
             {name: 'usuario', mapping: 'usuario.label'},
+            {name: 'tipo', mapping: 'tipo.label'},
             'nombre',
             'descripcion',
-            'resumen',            
-            'tipo',
+            'resumen',
             'gravedad',
             'fecha_creacion',
             'imagen',
@@ -53,7 +52,20 @@ Ext.onReady(function(){
             'imagen',
             'estado'
         ]
-    });    
+    }); 
+
+    Ext.define('PruebaModel',{
+        extend: 'Ext.data.Model',
+        fields: [  
+            'nombre',
+            'ruta',
+            'tipo',
+            {name: 'usuario', mapping: 'usuario.label'},         
+            'fecha_creacion',            
+            'estado',
+            'id'
+        ]
+    });  
 
     peticionStore = Ext.create('Ext.data.Store', {        
         model:'PeticionModel',
@@ -72,6 +84,14 @@ Ext.onReady(function(){
         }
     });
     defectoStore.load();
+
+    var pruebaStore = Ext.create('Ext.data.Store', {        
+        model:'PruebaModel',
+        proxy: {
+            type: 'ajax',
+            url: '/get_prueba'            
+        }
+    });
 
     /**
     * Grid para peticiones
@@ -208,6 +228,11 @@ Ext.onReady(function(){
             handler: function() {
                 defectoStore.load();
             }
+        },'-',{
+            text:"Info por tipos",
+            handler: function() {
+                windows.dfiltro.show();
+            }
         }],
         listeners : {
             itemdblclick: function(self, record, number, index, eOpts) {                
@@ -219,6 +244,10 @@ Ext.onReady(function(){
                 cmb.select(record);
 
                 cmb = Ext.getCmp('cmbUsuarioDefecto');
+                record = cmb.findRecordByDisplay(cmb.getValue());                
+                cmb.select(record);
+
+                cmb = Ext.getCmp('cmbTipoDefecto');
                 record = cmb.findRecordByDisplay(cmb.getValue());                
                 cmb.select(record);
 
@@ -365,9 +394,24 @@ Ext.onReady(function(){
                     pbID = null;
                     Ext.getCmp('pbView').setVisible(false);
                 } else {
-                    pbID =  id.replace('p','');               
-                    Ext.getCmp('form-carpeta-id').setValue("");
-                    Ext.getCmp('pbView').setVisible(true);
+                    Ext.getCmp('pbView').setActiveTab(0);
+                    pbID =  id.replace('p','');
+                    pruebaStore.load({params: {
+                        id: pbID
+                    }, callback: function(record) {
+                        Ext.getCmp('form-carpeta-id').setValue("");
+                        Ext.getCmp('form-prueba-id').setValue(pbID);                        
+                        Ext.getCmp('pbView').setVisible(true);
+                        Ext.getCmp('pruebaFormEdit').loadRecord(record[0]);
+
+                        var cmb = Ext.getCmp('cmbUsuarioPrueba');
+                        var record = cmb.findRecordByDisplay(cmb.getValue());                
+                        cmb.select(record);
+                    }});
+                    ppruebaStore.load({params: {
+                        id: pbID
+                    }});
+                    Ext.getCmp('form-prueba-id-p').setValue(pbID);
                     
                 }
                 
@@ -376,20 +420,11 @@ Ext.onReady(function(){
     });
 
     var pbView = Ext.create('Ext.tab.Panel', {
-        id:'pbView',
-        //region : "center",          
+        id:'pbView',              
         width : '100%',
         border: 0,
         bodyBorder:false,
-        items: [{
-            title: 'Prueba'
-        }, {
-            title: 'Paso de Prueba',
-            tabConfig: {
-                title: 'Custom Title',
-                tooltip: 'A button tooltip'
-            }
-        }]
+        items: [forms.pruebaForm, gridPasoPrueba]
     });
     pbView.setVisible(false);
 

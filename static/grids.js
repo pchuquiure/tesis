@@ -23,11 +23,45 @@ Ext.define('DefectoVinModel',{
     ]
 });
 
+Ext.define('PpruebaModel',{
+    extend: 'Ext.data.Model',
+    fields: [ 
+        'num_paso',
+        'descripcion',
+        'esperado',        
+        'observaciones'        
+    ]
+});
+
+Ext.define('ResultFilterModel',{
+    extend: 'Ext.data.Model',
+    fields: [ 
+        'tipo',
+        'cantidad'        
+    ]
+});
+
 var peticionAttachStore = Ext.create('Ext.data.Store', {        
     model:'AdjuntoModel',
     proxy: {
         type: 'ajax',
         url: '/get_peticion_attach'
+    }
+});
+
+var ppruebaStore = Ext.create('Ext.data.Store', {        
+    model:'PpruebaModel',
+    proxy: {
+        type: 'ajax',
+        url: '/get_pprueba'
+    }
+});
+
+resultFilterStore = Ext.create('Ext.data.Store', {        
+    model:'ResultFilterModel',
+    proxy: {
+        type: 'ajax',
+        url: '/get_dfilter'
     }
 });
 
@@ -87,4 +121,80 @@ var groupPeAttach = Ext.create('Ext.Panel', {
     frameHead:false,
     border:0,
     items: [gridPeAttach, forms.peticionesFormAttach]
+});
+
+var gridPasoPrueba = Ext.create('Ext.grid.Panel', {
+    id: 'grid-paso-prueba',
+    title: 'Paso prueba',
+    border:0,
+    store: ppruebaStore,
+    columns: [
+        { header: 'N° paso',  dataIndex: 'num_paso', flex: 1 },
+        { header: 'Descrición', dataIndex: 'descripcion', flex: 1 },
+        { header: 'Observaciones', dataIndex: 'observaciones', flex: 1 },
+        { header: 'Esperado', dataIndex: 'esperado', flex: 1 }        
+    ],
+    height: '100%',
+    width: '100%',
+    tbar: ["Acciones:",{
+        text:"Nuevo",
+        handler: function() {                
+            windows.pasoprueba.show();
+        }
+    },'-',{
+        text:"Eliminar",
+        handler: function() {
+            var gridPP = Ext.getCmp('grid-paso-prueba');
+            if (gridPP.getSelectionModel().selected.length > 0) {
+                if (confirm("¿Desea eliminar el registro?")) {
+                    var selected = gridPP.getSelectionModel().selected;
+                    var id = selected.items[0].data.id;
+                    Ext.Ajax.request({
+                        url: '/delete_pprueba',
+                        params: {
+                            id: id
+                        },
+                        success: function(response) {
+                            ppruebaStore.load({params: {
+                                id: pbID
+                            }});
+                        }
+                    });
+                }
+            }  else {
+                alert('Selecciona el item a eliminar');
+            }
+        }
+    },'-',{
+        text:"Actualizar",
+        handler: function() {
+            ppruebaStore.load({params: {
+                id: pbID
+            }});
+        }
+    }],       
+    listeners : {
+        itemdblclick: function(self, record, number, index, eOpts) {
+            var form = Ext.getCmp('ppruebaFormEdit');
+            form.loadRecord(record);
+
+            windows.pasopruebaEdit.show();
+            var selected = self.getSelectionModel().selected;
+            var id = selected.items[0].data.id;
+            Ext.getCmp('form-pprueba-id').setValue(id);
+        }
+    }    
+});
+
+var resultFilterGrid = Ext.create('Ext.grid.Panel', {
+    id: 'grid-filter-result',
+    frameHeader:false,
+    border:0,
+    store: resultFilterStore,
+    columns: [
+        { header: 'Tipo',  dataIndex: 'tipo', flex: 1 },
+        { header: 'Cantidad', dataIndex: 'cantidad', flex: 1 }          
+    ],
+    height: 200,
+    width: 300
 });

@@ -210,13 +210,16 @@ def get_defecto(request):
             'resumen': defecto.resumen,
             'descripcion': defecto.descripcion,
             'fecha_creacion': str(defecto.fechaCreacion),
-            'estado': defecto.estado,
-            'tipo': defecto.tipo,
+            'estado': defecto.estado,            
             'gravedad': defecto.gravedad,            
             'imagen': imagen,
             'peticion': {
                 'id':defecto.peticion.pk,
                 'label':u'%s' % (defecto.peticion.nombre),
+            },
+            'tipo': {
+                'value':defecto.tipo.pk,
+                'label':u'%s' % (defecto.tipo.nombre),
             },
             'usuario': {
                 'id':defecto.usuario.pk,
@@ -256,7 +259,7 @@ def guarda_defecto(request):
             defecto.usuario_id = usuario            
             defecto.estado = estado
             defecto.gravedad = gravedad
-            defecto.tipo = tipo
+            defecto.tipo_id = tipo
             defecto.descripcion = descripcion
             defecto.resumen = resumen
             defecto.nombre = nombre
@@ -308,6 +311,28 @@ def get_carpeta(request):
     response = HttpResponse(json_obj, mimetype="application/json")    
     return response
 
+def get_prueba(request):
+    json_str = []
+    id = request.GET.get('id', None)
+    if id:
+        carpeta = CasoPrueba.objects.get(id=id)
+        json_str.append({
+            'id': carpeta.pk,
+            'nombre': carpeta.nombre,
+            'tipo': carpeta.tipo,
+            'ruta': carpeta.ruta,
+            'estado': carpeta.estado,
+            'fecha_creacion': str(carpeta.fechaCreacion),
+            'usuario': {
+                'id':carpeta.usuario.pk,
+                'label':u'%s %s' % (carpeta.usuario.persona.nombre,
+                carpeta.usuario.persona.apellidos),
+            }
+        })            
+    json_obj = json.dumps(json_str, sort_keys=True, indent=4)
+    response = HttpResponse(json_obj, mimetype="application/json")    
+    return response
+
 @csrf_exempt
 def guarda_carpeta(request):
     if request.method.lower() == "post":
@@ -347,7 +372,9 @@ def guarda_prueba(request):
                 prueba = CasoPrueba.objects.get(id=id)
             else:
                 prueba = CasoPrueba()
-            prueba.carpeta_id = carpeta
+
+            if carpeta:
+                prueba.carpeta_id = carpeta
             prueba.usuario_id = usuario            
             prueba.estado = estado 
             prueba.ruta = ruta 
@@ -390,3 +417,105 @@ def delete_prueba(request):
         json_obj = json.dumps(result, indent=4)
         response = HttpResponse(json_obj, mimetype='text/html') 
         return response
+
+def get_pprueba(request):
+    json_str = []
+    id = request.GET.get('id', None)
+    if id:
+        pasoCasos = PasoCaso.objects.filter(caso_prueba__pk=id)
+        for pasocaso in pasoCasos:
+            json_str.append({
+                'id': pasocaso.paso_prueba.pk,
+                'num_paso': pasocaso.paso_prueba.num_paso,
+                'descripcion': pasocaso.paso_prueba.descripcion,
+                'esperado': pasocaso.paso_prueba.esperado,
+                'observaciones': pasocaso.paso_prueba.observaciones,                
+                'paso_caso': {
+                    'id':pasocaso.pk                    
+                }
+            })            
+    json_obj = json.dumps(json_str, sort_keys=True, indent=4)
+    response = HttpResponse(json_obj, mimetype="application/json")    
+    return response
+
+@csrf_exempt
+def guarda_pprueba(request):
+    if request.method.lower() == "post":
+        result = {'success':'true'}
+        id = request.POST.get('id', None)
+        pid = request.POST.get('pid', None)               
+        num_paso = request.POST.get('num_paso', None)
+        descripcion = request.POST.get('descripcion', None)
+        observaciones = request.POST.get('observaciones', None)
+        esperado = request.POST.get('esperado', None)
+
+        try:
+            if id:
+                pprueba = PasoPrueba.objects.get(id=id)
+            else:
+                pprueba = PasoPrueba()
+            
+            pprueba.num_paso = num_paso            
+            pprueba.descripcion = descripcion 
+            pprueba.observaciones = observaciones 
+            pprueba.esperado = esperado
+            pprueba.save()
+
+            if pid:                
+                pcaso = PasoCaso()
+                pcaso.paso_prueba_id = pprueba.id
+                pcaso.caso_prueba_id = pid
+                pcaso.save()
+            
+        except Exception as e:
+            print e           
+            result = {'success':'false'}
+
+        json_obj = json.dumps(result, indent=4)
+        response = HttpResponse(json_obj, mimetype='text/html') 
+        return response
+
+@csrf_exempt
+def delete_pprueba(request):
+    if request.method.lower() == "post":
+        result = {'success':'true'}   
+        id = request.POST.get('id', None)
+        try:
+            pprueba = PasoPrueba.objects.get(id=id)
+            pprueba.delete()
+        except Exception as e:
+            print e
+            result = {'success':'false'}
+        json_obj = json.dumps(result, indent=4)
+        response = HttpResponse(json_obj, mimetype='text/html') 
+        return response
+
+def get_tipo_defecto(request):
+    json_str = []
+    id = request.GET.get('id', None)
+    tdefectos = TipoDefecto.objects.all()
+
+    for tdefecto in tdefectos:
+        json_str.append({
+            'value': tdefecto.pk,
+            'label': tdefecto.nombre                      
+        })
+    json_obj = json.dumps(json_str, sort_keys=True, indent=4)
+    response = HttpResponse(json_obj, mimetype="application/json")    
+    return response
+
+def get_dfilter(request):
+    json_str = []
+    cid = request.GET.get('cid', None)
+    tdefectos = TipoDefecto.objects.all()
+
+    for tdefecto in tdefectos:
+        defectos = Defecto.objects.filter(peticion__canal__pk=cid,
+            tipo=tdefecto)        
+        json_str.append({
+            'tipo': tdefecto.nombre,
+            'cantidad': len(defectos)                      
+        })
+    json_obj = json.dumps(json_str, sort_keys=True, indent=4)
+    response = HttpResponse(json_obj, mimetype="application/json")    
+    return response

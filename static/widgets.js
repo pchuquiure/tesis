@@ -164,5 +164,77 @@ var windows = {
             items: [forms.prueba]
         }
         ]
-    })
+    }),
+    pasoprueba: Ext.create('widget.window', {        
+        height: 295,
+        width: 580,
+        closeAction: 'hide',
+        title: 'Nuevo Paso de Prueba',
+        closable: true,
+        plain: false,                
+        border:0,
+        layout: {
+            type: 'border',
+            padding: 2
+        },
+        items: [
+        {
+            region: 'center',            
+            border:0,
+            items: [forms.pprueba]
+        }
+        ]
+    }),
+    pasopruebaEdit: Ext.create('widget.window', {        
+        height: 295,
+        width: 580,
+        closeAction: 'hide',
+        title: 'Detalle Paso de Prueba',
+        closable: true,
+        plain: false,                
+        border:0,
+        layout: {
+            type: 'border',
+            padding: 2
+        },
+        items: [
+        {
+            region: 'center',            
+            border:0,
+            items: [forms.ppruebaEdit]
+        }
+        ]
+    }),
+    dfiltro: Ext.create('widget.window', {
+        id:'win-dfiltro',
+        height: 300,
+        width: 450,
+        closeAction: 'hide',
+        title: 'Detalle por tipo de defectos',
+        closable: true,
+        plain: false,
+        resizable:false,           
+        border:0,
+        layout: {
+            type: 'border',
+            padding: 2
+        },
+        items: [
+        {
+            region: 'west',            
+            frameHeader: false,
+            width: 200,
+            split: true,
+            collapsible: false,
+            floatable: false,
+            border:0,
+            items: [forms.dfiltro]      
+        },
+        {
+            region: 'center',            
+            border:0,
+            items: [resultFilterGrid]
+        }
+        ]
+    }),
 }
