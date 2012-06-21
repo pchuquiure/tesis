@@ -144,5 +144,25 @@ var windows = {
             items: [forms.carpeta]
         }
         ]
+    }),
+    prueba: Ext.create('widget.window', {        
+        height: 155,
+        width: 580,
+        closeAction: 'hide',
+        title: 'Nueva Prueba',
+        closable: true,
+        plain: false,                
+        border:0,
+        layout: {
+            type: 'border',
+            padding: 2
+        },
+        items: [
+        {
+            region: 'center',            
+            border:0,
+            items: [forms.prueba]
+        }
+        ]
     })
 }

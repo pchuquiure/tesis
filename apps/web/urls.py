@@ -21,9 +21,12 @@ urlpatterns = patterns('web.views',
         name='guarda_peticion_attach'),    
     url('^guarda_defecto$', 'guarda_defecto', name='guarda_defecto'),
     url('^guarda_carpeta$', 'guarda_carpeta', name='guarda_carpeta'),
+    url('^guarda_prueba$', 'guarda_prueba', name='guarda_prueba'),
     
     url('^delete_peticion$', 'delete_peticion', name='delete_peticion'),
     url('^delete_defecto$', 'delete_defecto', name='delete_defecto'),
+    url('^delete_carpeta$', 'delete_carpeta', name='delete_carpeta'),
+    url('^delete_prueba$', 'delete_prueba', name='delete_prueba')
     
     
 )

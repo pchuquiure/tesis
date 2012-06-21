@@ -721,7 +721,7 @@ var forms = {
                         url: '/guarda_defecto',               
                         success: function(form,action) {
                             form.reset();                            
-                            defectoStore.load();                                                
+                            defectoStore.load();                            
                             windows.defectos.hide();
                         },
                         failure: function(form,action){
@@ -734,7 +734,7 @@ var forms = {
             text: 'Cerrar',
             margin:'0 15 0 0',
             handler: function() {
-                windows.defectos.hide();
+                windows.defectos.hide();                
                 this.up('form').getForm().reset();
             }
         }]
@@ -781,6 +781,7 @@ var forms = {
                             form.reset();                            
                             carpetaStore.load();                                                
                             windows.carpeta.hide();
+                            Ext.getCmp('form-carpeta-id').setValue("");
                         },
                         failure: function(form,action){
                             this.up('form').getForm().reset();
@@ -793,6 +794,112 @@ var forms = {
             margin:'0 15 0 0',
             handler: function() {
                 windows.carpeta.hide();
+                this.up('form').getForm().reset();
+            }
+        }]
+    }),
+    prueba: Ext.create('Ext.form.Panel', { 
+        id:'pruebaForm',      
+        height: 120,
+        width: 570,
+        bodyBorder:false,        
+        border:0,
+        layout: {
+            type: 'column'
+        },
+        bodyPadding: 10,
+        frameHeader: false,
+        titleCollapse: false,
+        items: [
+            {
+                xtype: 'container',
+                height: 80,
+                width: 290,
+                items: [
+                    {
+                        xtype: 'textfield',
+                        name: 'nombre',
+                        fieldLabel: 'Nombre',
+                        allowBlank:false
+                    },
+                    {
+                        xtype: 'combobox',
+                        name: 'estado',
+                        displayField: 'label',
+                        valueField: 'value',
+                        editable:false,
+                        fieldLabel: 'Estado',
+                        allowBlank:false,
+                        store:estadoStore
+                    }
+                ]
+            },{
+                xtype: 'container',
+                height: 80,
+                width: 258,
+                items: [
+                    {
+                        xtype: 'combobox',
+                        name: 'usuario',
+                        fieldLabel: 'Usuario',
+                        displayField: 'label',
+                        valueField: 'id',
+                        editable:false,
+                        blankText:'Elige',
+                        allowBlank:false,
+                        store: usuarioStore
+                    },
+                    {
+                        xtype: 'combobox',
+                        name: 'tipo',
+                        displayField: 'label',
+                        valueField: 'value',
+                        editable:false,
+                        fieldLabel: 'Tipo',
+                        allowBlank:false,
+                        store:tipoStore
+                    },
+                    {
+                        xtype: 'textfield',
+                        name: 'ruta',                        
+                        fieldLabel: 'Ruta',
+                        allowBlank:false                        
+                    },
+                    {
+                        xtype: 'hiddenfield',
+                        id:'form-carpeta-id',             
+                        name: 'carpeta',                
+                        allowBlank:false                         
+                    }
+                ]
+            }
+        ],
+        buttons: [{
+            text: 'Guardar',
+            margin:'0 5 0 0',
+            handler: function(){
+                var form = Ext.getCmp('pruebaForm').getForm();
+                if(form.isValid()) {                    
+                    form.submit({
+                        formBind: true,
+                        waitMsg:'Guardando...',
+                        url: '/guarda_prueba',               
+                        success: function(form,action) {
+                            form.reset();                            
+                            carpetaStore.load();                                              
+                            windows.prueba.hide();
+                        },
+                        failure: function(form,action){
+                            this.up('form').getForm().reset();
+                        }
+                    });
+                }                
+            }
+        },{
+            text: 'Cerrar',
+            margin:'0 15 0 0',
+            handler: function() {
+                windows.prueba.hide();
                 this.up('form').getForm().reset();
             }
         }]

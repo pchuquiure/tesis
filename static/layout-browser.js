@@ -14,6 +14,7 @@ Ext.require([
 Ext.onReady(function(){
     var viewport;
     var cPanel;
+    var pbID;
 
     var layoutBase = [];
     Ext.Object.each(getBasicLayouts(), function(name, ly) {
@@ -224,7 +225,7 @@ Ext.onReady(function(){
                 windows.defectos.show();
                 var selected = gridDe.getSelectionModel().selected;
                 var id = selected.items[0].data.id;
-                Ext.getCmp('form-defecto-id').setValue(id);                
+                Ext.getCmp('form-defecto-id').setValue(id);
             }
         }    
     });
@@ -254,10 +255,10 @@ Ext.onReady(function(){
 
     carpetaStore = Ext.create('Ext.data.TreeStore', {
         root: {
-            expanded: true
-        },
+            expanded: false
+        },        
         proxy: {
-            type: 'ajax',
+            type: 'ajax',            
             url: '/get_carpeta'
         }
     });
@@ -265,7 +266,7 @@ Ext.onReady(function(){
     var treePanel = Ext.create('Ext.tree.Panel', {
         id: 'tree-panel',
         title: 'Menu',
-        region:'north',
+        region:'north',        
         split: true,
         height: 360,
         minSize: 150,
@@ -282,7 +283,7 @@ Ext.onReady(function(){
         },
         store: store
     });
-
+    
     var tbPruebas = {
         xtype:'toolbar',
         width: '100%',
@@ -293,8 +294,54 @@ Ext.onReady(function(){
             }
         },'-',{
             text:"Eliminar Carpeta",
+            handler: function() {
+                if (Ext.getCmp('form-carpeta-id').getValue()) {
+                    if (confirm("¿Desea eliminar el registro?")) {
+                        var id = Ext.getCmp('form-carpeta-id').getValue();
+                        Ext.Ajax.request({
+                            url: '/delete_carpeta',
+                            params: {
+                                id: id
+                            },
+                            success: function(response) {
+                                carpetaStore.load();
+                                Ext.getCmp('pbView').setVisible(false);
+                            }
+                        });
+                    }
+                } else {
+                    alert('Debes seleccionar una carpeta');
+                }
+            }
         },'-',{
             text:"Agregar Prueba",
+            handler: function() {
+                if (Ext.getCmp('form-carpeta-id').getValue()) {
+                    windows.prueba.show();
+                } else {
+                    alert('Debes seleccionar una carpeta');
+                }
+            }
+        },'-',{
+            text:"Eliminar Prueba",
+            handler: function() {
+                if (pbID) {
+                    if (confirm("¿Desea eliminar el registro?")) {            
+                        Ext.Ajax.request({
+                            url: '/delete_prueba',
+                            params: {
+                                id: pbID
+                            },
+                            success: function(response) {
+                                carpetaStore.load();
+                                Ext.getCmp('pbView').setVisible(false);
+                            }
+                        });
+                    }   
+                } else {
+                    alert('Debes seleccionar una prueba');
+                }
+            }
         }
         ]
     }
@@ -302,15 +349,50 @@ Ext.onReady(function(){
     var treeCarpeta = Ext.create('Ext.tree.Panel', { 
         region : "west",
         width : '50%',
-        border: 0,        
+        border: 0,
+        useArrows: true,     
         bodyBorder:false,
         autoHeight: true,
         minSize: 150,
         rootVisible: false,
         autoScroll: true,        
-        store: carpetaStore
+        store: carpetaStore,
+        listeners: {
+            select: function(self, record, index, eOpts) {                                
+                var id = record.internalId.toString();
+                if (id.indexOf('p') == -1) {
+                    Ext.getCmp('form-carpeta-id').setValue(id);
+                    pbID = null;
+                    Ext.getCmp('pbView').setVisible(false);
+                } else {
+                    pbID =  id.replace('p','');               
+                    Ext.getCmp('form-carpeta-id').setValue("");
+                    Ext.getCmp('pbView').setVisible(true);
+                    
+                }
+                
+            }
+        }
     });
-    
+
+    var pbView = Ext.create('Ext.tab.Panel', {
+        id:'pbView',
+        //region : "center",          
+        width : '100%',
+        border: 0,
+        bodyBorder:false,
+        items: [{
+            title: 'Prueba'
+        }, {
+            title: 'Paso de Prueba',
+            tabConfig: {
+                title: 'Custom Title',
+                tooltip: 'A button tooltip'
+            }
+        }]
+    });
+    pbView.setVisible(false);
+
     var pruebaPanel = {
         id:"pruebas-panel",
         layout : "border",
@@ -319,7 +401,8 @@ Ext.onReady(function(){
         items : [{
             region : "center",            
             width : '50%',
-            border: 0            
+            border: 0,
+            items: [pbView]
         },
         {
             region : "north",

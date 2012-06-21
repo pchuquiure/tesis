@@ -290,19 +290,17 @@ def get_carpeta(request):
     carpetas = Carpeta.objects.all()
     for carpeta in carpetas:
         children = []
-        json_str.append({
-            'children': {
-                'text': carpeta.nombre,
-                'id': carpeta.pk,
-                'expanded': False,
-                'children': children
-            }
+        json_str.append({            
+            'text': carpeta.nombre,
+            'id': carpeta.pk,
+            'expanded': False,
+            'children': children            
         })
         pruebas = CasoPrueba.objects.filter(carpeta=carpeta)
         for prueba in pruebas:
             children.append({
                 'text': prueba.nombre,
-                'id': prueba.pk,
+                'id': "p"+str(prueba.pk),
                 'expanded': False,
                 'leaf': True
             })    
@@ -328,6 +326,67 @@ def guarda_carpeta(request):
             print e           
             result = {'success':'false'}
 
+        json_obj = json.dumps(result, indent=4)
+        response = HttpResponse(json_obj, mimetype='text/html') 
+        return response
+
+@csrf_exempt
+def guarda_prueba(request):
+    if request.method.lower() == "post":
+        result = {'success':'true'}
+        id = request.POST.get('id', None)            
+        usuario = request.POST.get('usuario', None)
+        estado = request.POST.get('estado', None)
+        tipo = request.POST.get('tipo', None)
+        ruta = request.POST.get('ruta', None)        
+        nombre = request.POST.get('nombre', None)
+        carpeta = request.POST.get('carpeta', None)
+
+        try:
+            if id:
+                prueba = CasoPrueba.objects.get(id=id)
+            else:
+                prueba = CasoPrueba()
+            prueba.carpeta_id = carpeta
+            prueba.usuario_id = usuario            
+            prueba.estado = estado 
+            prueba.ruta = ruta 
+            prueba.tipo = tipo
+            prueba.nombre = nombre            
+            prueba.save()
+        except Exception as e:
+            print e           
+            result = {'success':'false'}
+
+        json_obj = json.dumps(result, indent=4)
+        response = HttpResponse(json_obj, mimetype='text/html') 
+        return response
+
+@csrf_exempt
+def delete_carpeta(request):
+    if request.method.lower() == "post":
+        result = {'success':'true'}   
+        id = request.POST.get('id', None)
+        try:
+            carpeta = Carpeta.objects.get(id=id)
+            carpeta.delete()
+        except Exception as e:
+            result = {'success':'false'}
+        json_obj = json.dumps(result, indent=4)
+        response = HttpResponse(json_obj, mimetype='text/html') 
+        return response
+
+@csrf_exempt
+def delete_prueba(request):
+    if request.method.lower() == "post":
+        result = {'success':'true'}   
+        id = request.POST.get('id', None)
+        try:
+            prueba = CasoPrueba.objects.get(id=id)
+            prueba.delete()
+        except Exception as e:
+            print e
+            result = {'success':'false'}
         json_obj = json.dumps(result, indent=4)
         response = HttpResponse(json_obj, mimetype='text/html') 
         return response
