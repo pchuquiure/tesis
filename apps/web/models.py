@@ -32,6 +32,11 @@ class Usuario(models.Model):
         verbose_name = 'Usuario'
         verbose_name_plural = 'Usuarios'
 
+class Carpeta(models.Model):
+    nombre = models.CharField(u'Nombre', blank=False, max_length=45)    
+    fechaCreacion = models.DateTimeField(u'Fecha de creación', 
+        auto_now_add=True)
+
 class CasoPrueba(models.Model):
     """ Caso por Prueba Model
     ForeignKey: Usuario
@@ -43,6 +48,7 @@ class CasoPrueba(models.Model):
     fechaCreacion = models.DateTimeField(u'Fecha de creación', 
         auto_now_add=True)    
     usuario = models.ForeignKey(Usuario)
+    carpeta = models.ForeignKey(Carpeta)    
 
 class Aplicativo(models.Model):
     """ Aplicativo Model
@@ -74,10 +80,10 @@ class Peticion(models.Model):
     ForeignKey: Aplicativo, Canal, Usuario
     """
     nombre = models.CharField(u'Nombre', blank=False, max_length=45)
-    descripcion = models.CharField(u'Descripción', max_length=45, 
+    descripcion = models.CharField(u'Descripción', max_length=200, 
         blank=False)    
     estado = models.CharField(u'Estado', blank=False, max_length=45)
-    imagen = models.ImageField('Imagen Equipo', max_length=255,
+    imagen = models.ImageField('Imagen Equipo', max_length=455,
         upload_to='peticiones/%Y/%m/%d', null=True)
     fechaCreacion = models.DateTimeField(u'Fecha de creación', 
         auto_now_add=True)
@@ -87,7 +93,7 @@ class Peticion(models.Model):
 
 class Adjunto(models.Model):    
     tamano = models.CharField(u'Tamano', blank=False, max_length=45)
-    imagen = models.FileField('Archivo', max_length=255,
+    imagen = models.FileField('Archivo', max_length=455,
         upload_to='peticiones', null=True)
     fechaCreacion = models.DateTimeField(u'Fecha de creación', 
         auto_now_add=True)
@@ -107,12 +113,12 @@ class Defecto(models.Model):
     nombre = models.CharField(u'Nombre', blank=False, max_length=45)
     resumen = models.CharField(u'Resumen', max_length=200, 
         blank=False)
-    descripcion = models.CharField(u'Descripción', max_length=45, 
+    descripcion = models.CharField(u'Descripción', max_length=200, 
         blank=False)
     estado = models.CharField(u'Estado', blank=False, max_length=45)
     tipo = models.CharField(u'Tipo', blank=False, max_length=45)
     gravedad = models.CharField(u'Gravedad', blank=False, max_length=45)
-    imagen = models.ImageField('Imagen Equipo', max_length=45,
+    imagen = models.ImageField('Imagen Equipo', max_length=200,
         upload_to='defecto', null=True)
     fechaCreacion = models.DateTimeField(u'Fecha de creación', 
         auto_now_add=True)

@@ -24,6 +24,22 @@ Ext.onReady(function(){
         layoutBase.push(ly);
     });
 
+    Ext.define('DefectoModel',{
+        extend: 'Ext.data.Model',
+        fields: [            
+            {name: 'peticion', mapping: 'peticion.label'},            
+            {name: 'usuario', mapping: 'usuario.label'},
+            'nombre',
+            'descripcion',
+            'resumen',            
+            'tipo',
+            'gravedad',
+            'fecha_creacion',
+            'imagen',
+            'estado'
+        ]
+    });
+
     Ext.define('PeticionModel',{
         extend: 'Ext.data.Model',
         fields: [            
@@ -36,9 +52,7 @@ Ext.onReady(function(){
             'imagen',
             'estado'
         ]
-    });
-
-    
+    });    
 
     peticionStore = Ext.create('Ext.data.Store', {        
         model:'PeticionModel',
@@ -48,6 +62,15 @@ Ext.onReady(function(){
         }
     });
     peticionStore.load();    
+
+    defectoStore = Ext.create('Ext.data.Store', { 
+        model:'DefectoModel',
+        proxy: {
+            type: 'ajax',
+            url: '/get_defecto'
+        }
+    });
+    defectoStore.load();
 
     /**
     * Grid para peticiones
@@ -102,8 +125,20 @@ Ext.onReady(function(){
         listeners : {
             itemdblclick: function(self, record, number, index, eOpts) {                
                 var form = Ext.getCmp('peticionesFormEdit');
-                form.loadRecord(record);
-                console.log(form);
+                form.loadRecord(record);                             
+
+                var cmb = Ext.getCmp('cmbCanal');
+                var record = cmb.findRecordByDisplay(cmb.getValue());
+                cmb.select(record);
+
+                cmb = Ext.getCmp('cmbAplicativo');
+                record = cmb.findRecordByDisplay(cmb.getValue());                
+                cmb.select(record);
+
+                cmb = Ext.getCmp('cmbUsuario');
+                record = cmb.findRecordByDisplay(cmb.getValue());                
+                cmb.select(record);
+
                 windows.peticiones.show();
                 var selected = gridPe.getSelectionModel().selected;
                 var id = selected.items[0].data.id;
@@ -112,7 +147,84 @@ Ext.onReady(function(){
                 gridPeAttach.store = peticionAttachStore;
                 gridPeAttach.getStore().load({params: {
                     id: id
-                }});                
+                }});
+
+                gridDectosVinculados.getStore().load({params: {
+                    pid: id
+                }});               
+            }
+        }    
+    });
+
+    /**
+    * Grid para Defectos
+    */
+    var gridDe = Ext.create('Ext.grid.Panel', {
+        id: 'grid-de',
+        title: 'Defectos',
+        store: defectoStore,        
+        columns: [
+            { header: 'Nombre',  dataIndex: 'nombre' },
+            { header: 'Resumen', dataIndex: 'resumen', flex: 1 },
+            { header: 'Descrición', dataIndex: 'descripcion', flex: 1 },
+            { header: 'Fecha de Creación', dataIndex: 'fecha_creacion', flex: 1 },
+            { header: 'Tipo', dataIndex: 'tipo', flex: 1 },
+            { header: 'Estado', dataIndex: 'estado', flex: 1 },
+            { header: 'Gravedad', dataIndex: 'gravedad', flex: 1 },
+            { header: 'Petición', dataIndex: 'peticion', flex: 1 },
+            { header: 'Usuario', dataIndex: 'usuario' }
+        ],
+        height: '100%',
+        width: '100%',
+        tbar: ["Acciones:",{
+            text:"Nuevo",
+            handler: function() {                
+                windows.nuevoDefecto.show();
+            }
+        },'-',{
+            text:"Eliminar",
+            handler: function() {
+                if (gridDe.getSelectionModel().selected.length > 0) {
+                    if (confirm("¿Desea eliminar el registro?")) {
+                        var selected = gridDe.getSelectionModel().selected;
+                        var id = selected.items[0].data.id;
+                        Ext.Ajax.request({
+                            url: '/delete_defecto',
+                            params: {
+                                id: id
+                            },
+                            success: function(response) {
+                                defectoStore.load();
+                            }
+                        });
+                    }
+                }  else {
+                    alert('Selecciona el item a eliminar');
+                }
+            }
+        },'-',{
+            text:"Actualizar",
+            handler: function() {
+                defectoStore.load();
+            }
+        }],
+        listeners : {
+            itemdblclick: function(self, record, number, index, eOpts) {                
+                var form = Ext.getCmp('defectosFormEdit');
+                form.loadRecord(record);                             
+
+                var cmb = Ext.getCmp('cmbPeticionDefecto');
+                var record = cmb.findRecordByDisplay(cmb.getValue());
+                cmb.select(record);
+
+                cmb = Ext.getCmp('cmbUsuarioDefecto');
+                record = cmb.findRecordByDisplay(cmb.getValue());                
+                cmb.select(record);
+
+                windows.defectos.show();
+                var selected = gridDe.getSelectionModel().selected;
+                var id = selected.items[0].data.id;
+                Ext.getCmp('form-defecto-id').setValue(id);                
             }
         }    
     });
@@ -140,13 +252,13 @@ Ext.onReady(function(){
         }
     });
 
-    var storePr = Ext.create('Ext.data.TreeStore', {
+    carpetaStore = Ext.create('Ext.data.TreeStore', {
         root: {
             expanded: true
         },
         proxy: {
             type: 'ajax',
-            url: 'static/tree-pr.json'
+            url: '/get_carpeta'
         }
     });
 
@@ -171,17 +283,54 @@ Ext.onReady(function(){
         store: store
     });
 
-    var treePr = Ext.create('Ext.tree.Panel', {
-        id: 'tree-pr',
-        title: 'Pruebas',
-        region:'north',
-        split: true,
-        height: 360,
+    var tbPruebas = {
+        xtype:'toolbar',
+        width: '100%',
+        items: ["Acciones:", {
+            text:"Nueva Carpeta",
+            handler: function() {                
+                windows.carpeta.show();
+            }
+        },'-',{
+            text:"Eliminar Carpeta",
+        },'-',{
+            text:"Agregar Prueba",
+        }
+        ]
+    }
+
+    var treeCarpeta = Ext.create('Ext.tree.Panel', { 
+        region : "west",
+        width : '50%',
+        border: 0,        
+        bodyBorder:false,
+        autoHeight: true,
         minSize: 150,
         rootVisible: false,
         autoScroll: true,        
-        store: storePr
-    });    
+        store: carpetaStore
+    });
+    
+    var pruebaPanel = {
+        id:"pruebas-panel",
+        layout : "border",
+        title: 'Pruebas',
+        width : '100%',   
+        items : [{
+            region : "center",            
+            width : '50%',
+            border: 0            
+        },
+        {
+            region : "north",
+            split : false,
+            border: 0,
+            height : 30,
+            items:[tbPruebas]
+        },
+        treeCarpeta
+        ]
+    }
  
     /**
     * Contenedor ViewPort
@@ -219,5 +368,6 @@ Ext.onReady(function(){
     */
     cPanel = Ext.getCmp('content-panel');
     cPanel.add(gridPe);
-    cPanel.add(treePr);
+    cPanel.add(gridDe);
+    cPanel.add(pruebaPanel);
 });

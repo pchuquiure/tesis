@@ -38,6 +38,18 @@ def get_aplicativo(request):
     response = HttpResponse(json_obj, mimetype="application/json")    
     return response
 
+def get_peticion_simple(request):
+    json_str = []
+    peticiones = Peticion.objects.all()
+    for peticion in peticiones:
+        json_str.append({
+            'label': peticion.nombre,
+            'id': peticion.pk
+        })
+    json_obj = json.dumps(json_str, sort_keys=True, indent=4)
+    response = HttpResponse(json_obj, mimetype="application/json")    
+    return response
+
 def get_usuario(request):
     json_str = []
     usuarios = Usuario.objects.all()
@@ -54,14 +66,18 @@ def get_usuario(request):
 def get_peticion(request):
     json_str = []
     peticiones = Peticion.objects.all()
-    for peticion in peticiones:        
+    for peticion in peticiones:
+        try:
+            image = peticion.imagen.name.split("/")[4]
+        except:
+            image = None
         json_str.append({
             'id': peticion.pk,
             'nombre': peticion.nombre,
             'descripcion': peticion.descripcion,
             'fecha_creacion': str(peticion.fechaCreacion),
             'estado': peticion.estado,
-            'imagen': peticion.imagen.name,
+            'imagen': image,
             'aplicativo': {
                 'id':peticion.aplicativo.pk,
                 'label':peticion.aplicativo.nombre
@@ -86,10 +102,15 @@ def get_peticion_attach(request):
     adjuntos = Adjunto.objects.filter(peticion__pk=id)
 
     for adjunto in adjuntos:        
+        try:
+            imagen = adjunto.imagen.name.split("/")[1]
+        except:
+            imagen = None
+
         json_str.append({
             'id': adjunto.pk,
             'tamano': adjunto.tamano,
-            'file': adjunto.imagen.name,
+            'file': imagen,
             'fecha_creacion': str(adjunto.fechaCreacion)            
         })
     json_obj = json.dumps(json_str, sort_keys=True, indent=4)
@@ -128,7 +149,10 @@ def guarda_peticion(request):
         estado = request.POST.get('estado', None)
         descripcion = request.POST.get('descripcion', None)
         nombre = request.POST.get('nombre', None)
-        imagen = request.FILES['imagen']
+        try:
+            imagen = request.FILES['imagenFile']
+        except:
+            imagen = None
 
         try:
             if id:
@@ -141,7 +165,8 @@ def guarda_peticion(request):
             peticion.estado = estado
             peticion.descripcion = descripcion
             peticion.nombre = nombre
-            peticion.imagen = imagen
+            if imagen:
+                peticion.imagen = imagen
             peticion.save()
         except Exception as e:
             print e           
@@ -161,6 +186,148 @@ def delete_peticion(request):
             peticion.delete()
         except Exception as e:
             result = {'success':'false'}
+        json_obj = json.dumps(result, indent=4)
+        response = HttpResponse(json_obj, mimetype='text/html') 
+        return response
+
+def get_defecto(request):
+    """ Defecto """
+    json_str = []
+    pid = request.GET.get('pid', None)
+    if pid:
+        defectos = Defecto.objects.filter(peticion__pk=pid)
+    else:
+        defectos = Defecto.objects.all()
+
+    for defecto in defectos:
+        try:
+            imagen = defecto.imagen.name.split("/")[1]
+        except:
+            imagen = None
+        json_str.append({
+            'id': defecto.pk,
+            'nombre': defecto.nombre,
+            'resumen': defecto.resumen,
+            'descripcion': defecto.descripcion,
+            'fecha_creacion': str(defecto.fechaCreacion),
+            'estado': defecto.estado,
+            'tipo': defecto.tipo,
+            'gravedad': defecto.gravedad,            
+            'imagen': imagen,
+            'peticion': {
+                'id':defecto.peticion.pk,
+                'label':u'%s' % (defecto.peticion.nombre),
+            },
+            'usuario': {
+                'id':defecto.usuario.pk,
+                'label':u'%s %s' % (defecto.usuario.persona.nombre,
+                defecto.usuario.persona.apellidos),
+            }
+        })
+    json_obj = json.dumps(json_str, sort_keys=True, indent=4)
+    response = HttpResponse(json_obj, mimetype="application/json")    
+    return response
+
+@csrf_exempt
+def guarda_defecto(request):
+    if request.method.lower() == "post":
+        result = {'success':'true'}
+        id = request.POST.get('id', None)
+        peticion = request.POST.get('peticion', None)        
+        usuario = request.POST.get('usuario', None)
+        estado = request.POST.get('estado', None)
+        tipo = request.POST.get('tipo', None)
+        gravedad = request.POST.get('gravedad', None)
+        descripcion = request.POST.get('descripcion', None)
+        resumen = request.POST.get('resumen', None)
+        nombre = request.POST.get('nombre', None)
+
+        try:
+            imagen = request.FILES['imagenFile']
+        except:
+            imagen = None
+
+        try:
+            if id:
+                defecto = Defecto.objects.get(id=id)
+            else:
+                defecto = Defecto()
+            defecto.peticion_id = peticion
+            defecto.usuario_id = usuario            
+            defecto.estado = estado
+            defecto.gravedad = gravedad
+            defecto.tipo = tipo
+            defecto.descripcion = descripcion
+            defecto.resumen = resumen
+            defecto.nombre = nombre
+            if imagen:
+                defecto.imagen = imagen
+            defecto.save()
+        except Exception as e:
+            print e           
+            result = {'success':'false'}
+
+        json_obj = json.dumps(result, indent=4)
+        response = HttpResponse(json_obj, mimetype='text/html') 
+        return response
+
+@csrf_exempt
+def delete_defecto(request):
+    if request.method.lower() == "post":
+        result = {'success':'true'}   
+        id = request.POST.get('id', None)
+        try:
+            defecto = Defecto.objects.get(id=id)
+            defecto.delete()
+        except Exception as e:
+            result = {'success':'false'}
+        json_obj = json.dumps(result, indent=4)
+        response = HttpResponse(json_obj, mimetype='text/html') 
+        return response
+
+def get_carpeta(request):
+    json_str = []    
+    carpetas = Carpeta.objects.all()
+    for carpeta in carpetas:
+        children = []
+        json_str.append({
+            'children': {
+                'text': carpeta.nombre,
+                'id': carpeta.pk,
+                'expanded': False,
+                'children': children
+            }
+        })
+        pruebas = CasoPrueba.objects.filter(carpeta=carpeta)
+        for prueba in pruebas:
+            children.append({
+                'text': prueba.nombre,
+                'id': prueba.pk,
+                'expanded': False,
+                'leaf': True
+            })    
+    json_obj = json.dumps(json_str, sort_keys=True, indent=4)
+    response = HttpResponse(json_obj, mimetype="application/json")    
+    return response
+
+@csrf_exempt
+def guarda_carpeta(request):
+    if request.method.lower() == "post":
+        result = {'success':'true'}
+        id = request.POST.get('id', None)        
+        nombre = request.POST.get('nombre', None)
+
+        try:
+            if id:
+                carpeta = Carpeta.objects.get(id=id)
+            else:
+                carpeta = Carpeta()            
+            carpeta.nombre = nombre            
+            carpeta.save()
+        except Exception as e:
+            print e           
+            result = {'success':'false'}
+
         json_obj = json.dumps(result, indent=4)
         response = HttpResponse(json_obj, mimetype='text/html') 
         return response

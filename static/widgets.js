@@ -11,19 +11,22 @@ var menu = {
             handler: function() {                                
                 groupPeAttach.hide();
                 forms.peticiones.show();
-                
+                gridDectosVinculados.hide();
             }
         },{
             text: 'Datos Adjuntos',
             handler: function() {                                            
                 groupPeAttach.show();
                 forms.peticiones.hide();
+                gridDectosVinculados.hide();
             }
 
         },{
             text: 'Defectos Vinculados',
             handler: function() {
-                console.log("Click");
+                gridDectosVinculados.show();
+                forms.peticiones.hide();
+                groupPeAttach.hide();
             }
         }]
     })
@@ -52,12 +55,13 @@ var windows = {
     }),
     peticiones: Ext.create('widget.window', {
         id:'win-peticiones',
-        height: 290,
+        height: 330,
         width: 785,
         closeAction: 'hide',
         title: 'Detalle de petición',
         closable: true,
-        plain: false,                
+        plain: false,
+        resizable:false,           
         border:0,
         layout: {
             type: 'border',
@@ -77,7 +81,67 @@ var windows = {
         {
             region: 'center',            
             border:0,
-            items: [forms.peticiones, groupPeAttach]
+            items: [forms.peticiones, groupPeAttach, gridDectosVinculados]
+        }
+        ]
+    }),
+    nuevoDefecto: Ext.create('widget.window', {        
+        height: 335,
+        width: 580,
+        closeAction: 'hide',
+        title: 'Nuevo defecto',
+        closable: true,
+        plain: false,                
+        border:0,
+        layout: {
+            type: 'border',
+            padding: 2
+        },
+        items: [
+        {
+            region: 'center',            
+            border:0,
+            items: [forms.defectosForm]
+        }
+        ]
+    }),
+    defectos: Ext.create('widget.window', {        
+        height: 385,
+        width: 580,
+        closeAction: 'hide',
+        title: 'Detalle de defecto',
+        closable: true,
+        plain: false,                
+        border:0,
+        layout: {
+            type: 'border',
+            padding: 2
+        },
+        items: [
+        {
+            region: 'center',            
+            border:0,
+            items: [forms.defectos]
+        }
+        ]
+    }),
+    carpeta: Ext.create('widget.window', {        
+        height: 125,
+        width: 580,
+        closeAction: 'hide',
+        title: 'Nueva Carpeta',
+        closable: true,
+        plain: false,                
+        border:0,
+        layout: {
+            type: 'border',
+            padding: 2
+        },
+        items: [
+        {
+            region: 'center',            
+            border:0,
+            items: [forms.carpeta]
         }
         ]
     })

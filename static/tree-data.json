@@ -1,5 +1,4 @@
 { 
-text: '.',
 children: [{
     text:'Peticiones',
     id:'grid-pe',
@@ -8,15 +7,16 @@ children: [{
 },{
     text:'Pruebas',
     children:[{
-        text:'Pruebas',        
+        text:'Pruebas',
+        id:'pruebas-panel',
         leaf:true
     },{
-        text:'Ejecucion de pruebas',
-        id:'tree-pr',      
+        text:'Ejecucion de pruebas',            
         leaf:true
     }]
 },{
     text:'Defectos',
+    id:'grid-de',
     children:[]
 }]
 }
