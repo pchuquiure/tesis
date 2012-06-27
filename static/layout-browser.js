@@ -419,9 +419,6 @@ Ext.onReady(function(){
         }
     });
 
-
-
-
     var pbView = Ext.create('Ext.tab.Panel', {
         id:'pbView',              
         width : '100%',
@@ -491,4 +488,6 @@ Ext.onReady(function(){
     cPanel.add(gridPe);
     cPanel.add(gridDe);
     cPanel.add(pruebaPanel);
+    cPanel.add(epruebaPanel);
+    
 });

@@ -333,6 +333,8 @@ def get_prueba(request):
     response = HttpResponse(json_obj, mimetype="application/json")    
     return response
 
+
+
 @csrf_exempt
 def guarda_carpeta(request):
     if request.method.lower() == "post":
@@ -556,7 +558,7 @@ def get_ejecarpeta(request):
         epruebas = EjePrueba.objects.filter(carpeta=carpeta)
         for prueba in epruebas:
             children.append({
-                'text': prueba.nombre,
+                'text': prueba.peticion.nombre,
                 'id': "pp"+str(prueba.pk),
                 'expanded': False,
                 'leaf': True
@@ -570,21 +572,21 @@ def guarda_ejeprueba(request):
     if request.method.lower() == "post":
         result = {'success':'true'}
         carpeta = request.POST.get('carpeta', None)
-        peticion = request.POST.get('peticion', None)        
+        peticion = request.POST.get('peticion', None)
+        print peticion, "Pet" 
 
         try:
-            if id:
-                eprueba = EjePrueba.objects.get(carpeta_pk=carpeta, 
-                    prueba_id=peticion)
-            else:
-                eprueba = EjePrueba()
-            
-            eprueba.carpeta_id = carpeta
-            eprueba.peticion_id = peticion       
-            eprueba.save()
+            eprueba = EjePrueba.objects.get(carpeta__pk=carpeta, 
+                    peticion__id=peticion)            
         except Exception as e:
-            print e           
-            result = {'success':'false'}
+            print e
+            eprueba = EjePrueba()
+            
+        eprueba.carpeta_id = carpeta
+        eprueba.peticion_id = peticion       
+        eprueba.save()
+
+        #result = {'success':'false'}
 
         json_obj = json.dumps(result, indent=4)
         response = HttpResponse(json_obj, mimetype='text/html') 
@@ -666,10 +668,10 @@ def guarda_ejepruebap(request):
     if request.method.lower() == "post":
         result = {'success':'true'}
         prueba = request.POST.get('prueba', None)
-        eprueba = request.POST.get('eprueba', None)
+        eprueba = request.POST.get('epprueba', None)
 
         try:
-            epruebap = EjePruebaPruebas()            
+            epruebap = EjePruebaPruebas()
             epruebap.prueba_id = prueba
             epruebap.ejeprueba_id = eprueba
             epruebap.save()
@@ -697,8 +699,9 @@ def delete_ejepruebap(request):
         return response
 
 def get_ejepruebap(request):
-    json_str = []    
-    epruebasp = EjePruebaPruebas.objects.all()
+    json_str = []
+    eprueba = request.GET.get('ep', None)
+    epruebasp = EjePruebaPruebas.objects.filter(ejeprueba__id=eprueba)
     for prueba in epruebasp:
         children = []
         json_str.append({            
@@ -707,6 +710,25 @@ def get_ejepruebap(request):
             'expanded': False,
             'children': children            
         })         
+    json_obj = json.dumps(json_str, sort_keys=True, indent=4)
+    response = HttpResponse(json_obj, mimetype="application/json")    
+    return response
+
+def get_pruebas(request):
+    json_str = []
+    eprueba = request.GET.get('ep', None)    
+    pruebas = CasoPrueba.objects.all()
+    if eprueba:
+        for prueba in pruebas:       
+            try:
+                EjePruebaPruebas.objects.get(ejeprueba__id=eprueba,
+                    prueba=prueba)
+            except Exception as e:
+                print e
+                json_str.append({            
+                    'label': prueba.nombre,
+                    'id': prueba.pk
+                })         
     json_obj = json.dumps(json_str, sort_keys=True, indent=4)
     response = HttpResponse(json_obj, mimetype="application/json")    
     return response

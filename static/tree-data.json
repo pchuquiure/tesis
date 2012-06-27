@@ -11,7 +11,8 @@ children: [{
         id:'pruebas-panel',
         leaf:true
     },{
-        text:'Ejecucion de pruebas',            
+        text:'Ejecucion de pruebas',
+        id:'epruebas-panel',         
         leaf:true
     }]
 },{

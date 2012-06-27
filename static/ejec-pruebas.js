@@ -1,8 +1,35 @@
+var epeticionForm;
 var ecarpeta;
 var ecarpetaForm;
-var eprueba;
-var epruebaForm;
 var tbEPruebas;
+var pbEID;
+var epeticion;
+
+var peticionStoreCmb = Ext.create('Ext.data.Store', {        
+    fields:['label', 'id'],
+    proxy: {
+        type: 'ajax',
+        url: '/get_peticion_simple'
+    }
+});
+
+var pruebasStoreEje = Ext.create('Ext.data.TreeStore', {
+    root: {
+        expanded: false
+    },        
+    proxy: {
+        type: 'ajax',            
+        url: '/get_ejepruebap'
+    }
+});
+
+var pruebasStoreEjeAll = Ext.create('Ext.data.Store', {
+    fields:['label', 'id'],
+    proxy: {
+        type: 'ajax',            
+        url: '/get_pruebas'
+    }
+});
 
 var ecarpetaStore = Ext.create('Ext.data.TreeStore', {
     root: {
@@ -55,7 +82,7 @@ ecarpetaForm = Ext.create('Ext.form.Panel', {
                         success: function(form,action) {
                             form.reset();                            
                             ecarpetaStore.load();                                                
-                            windows.carpeta.hide();
+                            ecarpeta.hide();
                             Ext.getCmp('form-ecarpeta-id').setValue("");
                         },
                         failure: function(form,action){
@@ -72,13 +99,12 @@ ecarpetaForm = Ext.create('Ext.form.Panel', {
                 this.up('form').getForm().reset();
             }
         }]
-    })
+    });
 
-epruebaForm =  Ext.create('Ext.form.Panel', {
-        title:'Vincular Petición',
-        id:'epruebaForm',
-        height: 120,
-        width: 570,
+epeticionForm =  Ext.create('Ext.form.Panel', {        
+        id:'epeticionForm',
+        height: 70,
+        width: 580,
         bodyBorder:false,        
         border:0,
         layout: {
@@ -94,49 +120,25 @@ epruebaForm =  Ext.create('Ext.form.Panel', {
                 width: 290,
                 items: [
                     {
-                        xtype: 'textfield',
-                        name: 'nombre',
-                        fieldLabel: 'Nombre',
-                        allowBlank:false
-                    },
-                    {
                         xtype: 'combobox',
-                        name: 'estado',
+                        name: 'peticion',
                         displayField: 'label',
-                        valueField: 'value',
+                        valueField: 'id',
                         editable:false,
-                        fieldLabel: 'Estado',
+                        fieldLabel: 'Petición',
                         allowBlank:false,
-                        store:estadoStore
+                        store:peticionStoreCmb
                     }
                 ]
             },{
                 xtype: 'container',
                 height: 80,
-                width: 258,
-                items: [
-                    {
-                        xtype: 'combobox',
-                        name: 'usuario',
-                        id:'cmbUsuarioPrueba',
-                        fieldLabel: 'Usuario',
-                        displayField: 'label',
-                        valueField: 'id',
-                        editable:false,
-                        blankText:'Elige',
-                        allowBlank:false,
-                        store: usuarioStore
-                    },                    
+                width: 265,
+                items: [                    
                     {
                         xtype: 'hiddenfield',
                         id:'form-ecarpeta-id',             
                         name: 'carpeta',                
-                        allowBlank:false                         
-                    },
-                    {
-                        xtype: 'hiddenfield',
-                        id:'form-epeticion-id',             
-                        name: 'peticion',                
                         allowBlank:false                         
                     }
                 ]
@@ -146,14 +148,15 @@ epruebaForm =  Ext.create('Ext.form.Panel', {
             text: 'Guardar',
             margin:'0 5 0 0',
             handler: function(){
-                var form = Ext.getCmp('epruebaForm').getForm();
+                var form = Ext.getCmp('epeticionForm').getForm();
                 if(form.isValid()) {                    
                     form.submit({
                         formBind: true,
                         waitMsg:'Guardando...',
-                        url: '/guarda_ejepruebap',               
+                        url: '/guarda_ejeprueba',               
                         success: function(form,action) {                                                       
                             ecarpetaStore.load();
+                            epeticion.hide();
                         },
                         failure: function(form,action){
                             this.up('form').getForm().reset();
@@ -161,8 +164,17 @@ epruebaForm =  Ext.create('Ext.form.Panel', {
                     });
                 }                
             }
+        },{
+            text: 'Cerrar',
+            margin:'0 15 0 0',
+            handler: function() {
+                ecarpeta.hide();
+                this.up('form').getForm().reset();
+            }
         }]
-    })
+    });
+
+
 
 ecarpeta = Ext.create('widget.window', {        
         height: 125,
@@ -185,11 +197,11 @@ ecarpeta = Ext.create('widget.window', {
         ]
     }),
 
-eprueba = Ext.create('widget.window', {        
-        height: 295,
-        width: 580,
+epeticion = Ext.create('widget.window', {        
+        height: 110,
+        width: 585,
         closeAction: 'hide',
-        title: 'XXXX',
+        title: 'Vincular Peticion',
         closable: true,
         plain: false,                
         border:0,
@@ -201,10 +213,10 @@ eprueba = Ext.create('widget.window', {
         {
             region: 'center',            
             border:0,
-            items: [epruebaForm]
+            items: [epeticionForm]
         }
         ]
-    }),
+    });
 
 tbEPruebas = {
     xtype:'toolbar',
@@ -227,7 +239,8 @@ tbEPruebas = {
                         },
                         success: function(response) {
                             ecarpetaStore.load();
-                            Ext.getCmp('pbView').setVisible(false);
+                            Ext.getCmp('form-ecarpeta-id').setValue("");
+                            Ext.getCmp('pbEView').setVisible(false);
                         }
                     });
                 }
@@ -239,7 +252,7 @@ tbEPruebas = {
         text:"Agregar Vinculo",
         handler: function() {
             if (Ext.getCmp('form-ecarpeta-id').getValue()) {
-                eprueba.show();
+                epeticion.show();
             } else {
                 alert('Debes seleccionar una carpeta');
             }
@@ -247,16 +260,16 @@ tbEPruebas = {
     },'-',{
         text:"Eliminar Vinculo",
         handler: function() {
-            if (pbID) {
+            if (pbEID) {
                 if (confirm("¿Desea eliminar el registro?")) {            
                     Ext.Ajax.request({
-                        url: '/delete_prueba',
+                        url: '/delete_ejeprueba',
                         params: {
-                            id: pbID
+                            id: pbEID
                         },
                         success: function(response) {
-                            carpetaStore.load();
-                            Ext.getCmp('pbView').setVisible(false);
+                            ecarpetaStore.load();
+                            Ext.getCmp('pbEView').setVisible(false);
                         }
                     });
                 }   
@@ -278,34 +291,28 @@ var treeCarpeta = Ext.create('Ext.tree.Panel', {
     minSize: 150,
     rootVisible: false,
     autoScroll: true,        
-    store: carpetaStore,
+    store: ecarpetaStore,
     listeners: {
-        select: function(self, record, index, eOpts) {                                
+        select: function(self, record, index, eOpts) {
+            Ext.getCmp('ejeCmb').getStore().load();                             
             var id = record.internalId.toString();
-            if (id.indexOf('p') == -1) {
-                Ext.getCmp('form-carpeta-id').setValue(id);
-                pbID = null;
-                Ext.getCmp('pbView').setVisible(false);
+            if (id.indexOf('pp') == -1) {
+                Ext.getCmp('form-ecarpeta-id').setValue(id);
+                pbEID = null;
+                Ext.getCmp('pbEView').setVisible(false);
             } else {
-                Ext.getCmp('pbView').setActiveTab(0);
-                pbID =  id.replace('p','');
-                pruebaStore.load({params: {
-                    id: pbID
+                Ext.getCmp('pbEView').setActiveTab(0);
+                pbEID =  id.replace('pp','');
+                Ext.getCmp('ejeCmb').getStore().load({params: {
+                        ep: pbEID
+                }});
+                Ext.getCmp('form-epp-id').setValue(pbEID); 
+                pruebasStoreEje.load({params: {
+                    ep: pbEID
                 }, callback: function(record) {
-                    Ext.getCmp('form-carpeta-id').setValue("");
-                    Ext.getCmp('form-prueba-id').setValue(pbID);                        
-                    Ext.getCmp('pbView').setVisible(true);
-                    Ext.getCmp('pruebaFormEdit').loadRecord(record[0]);
-
-                    var cmb = Ext.getCmp('cmbUsuarioPrueba');
-                    var record = cmb.findRecordByDisplay(cmb.getValue());                
-                    cmb.select(record);
+                    Ext.getCmp('form-ecarpeta-id').setValue("");
+                    Ext.getCmp('pbEView').setVisible(true);                                                        
                 }});
-                ppruebaStore.load({params: {
-                    id: pbID
-                }});
-                Ext.getCmp('form-prueba-id-p').setValue(pbID);
-                
             }
             
         }
@@ -313,19 +320,104 @@ var treeCarpeta = Ext.create('Ext.tree.Panel', {
 });
 
 
+var treePanelPruebas = Ext.create('Ext.tree.Panel', {        
+        title: 'Ejecución de pruebas',               
+        split: false,
+        height: 360,
+        minSize: 150,
+        rootVisible: false,
+        autoScroll: true,
+        store: pruebasStoreEje
+    });
+
+var selectPanelPruebas = Ext.create('Ext.form.Panel', {   
+        title:'Seleccionar Prueba',     
+        id:'selectPanelPruebas',
+        height: 70,
+        width: 580,
+        bodyBorder:false,        
+        border:0,
+        layout: {
+            type: 'column'
+        },
+        bodyPadding: 10,
+        frameHeader: false,
+        titleCollapse: false,
+        items: [
+            {
+                xtype: 'container',
+                height: 80,
+                width: 290,
+                items: [
+                    {
+                        xtype: 'combobox',
+                        name: 'prueba',
+                        id:'ejeCmb',
+                        displayField: 'label',
+                        valueField: 'id',
+                        editable:false,
+                        fieldLabel: 'Elige Prueba',
+                        allowBlank:false,
+                        store:pruebasStoreEjeAll
+                    }
+                ]
+            },{
+                xtype: 'container',
+                height: 80,
+                width: 265,
+                items: [                    
+                    {
+                        xtype: 'hiddenfield',
+                        id:'form-epp-id',             
+                        name: 'epprueba',                
+                        allowBlank:false                         
+                    }
+                ]
+            }
+        ],
+        buttons: [{
+            text: 'Guardar',
+            margin:'0 5 0 0',
+            handler: function(){
+                var form = Ext.getCmp('selectPanelPruebas').getForm();
+                if(form.isValid()) {                    
+                    form.submit({
+                        formBind: true,
+                        waitMsg:'Guardando...',
+                        url: '/guarda_ejepruebap',               
+                        success: function(form,action) {                                                       
+                            pruebasStoreEje.load({params: {
+                                ep: pbEID
+                            }});
+                            pruebasStoreEjeAll.load({params: {
+                                ep: pbEID
+                            }});                            
+                            Ext.getCmp('pbEView').setActiveTab(0);
+                            form.reset();
+                            Ext.getCmp('form-epp-id').setValue(pbEID);
+                        },
+                        failure: function(form,action){
+                            this.up('form').getForm().reset();
+                        }
+                    });
+                }                
+            }
+        }]
+    });
 
 
-var pbView = Ext.create('Ext.tab.Panel', {
-    id:'pbView',              
+
+var pbEView = Ext.create('Ext.tab.Panel', {
+    id:'pbEView',              
     width : '100%',
     border: 0,
     bodyBorder:false,
-    items: [forms.pruebaForm, gridPasoPrueba]
+    items: [treePanelPruebas, selectPanelPruebas]
 });
-pbView.setVisible(false);
+pbEView.setVisible(false);
 
 var epruebaPanel = {
-    id:"pruebas-panel",
+    id:"epruebas-panel",
     layout : "border",
     title: 'Pruebas',
     width : '100%',   
@@ -333,14 +425,14 @@ var epruebaPanel = {
         region : "center",            
         width : '50%',
         border: 0,
-        items: [pbView]
+        items: [pbEView]
     },
     {
         region : "north",
         split : false,
         border: 0,
         height : 30,
-        items:[tbPruebas]
+        items:[tbEPruebas]
     },
     treeCarpeta
     ]
