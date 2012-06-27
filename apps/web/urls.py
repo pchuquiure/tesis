@@ -23,6 +23,12 @@ urlpatterns = patterns('web.views',
         name='get_tipo_defecto'),    
     url('^get_dfilter$', 'get_dfilter', 
         name='get_dfilter'),  
+    url('^get_ejeprueba_attach$', 'get_ejeprueba_attach', 
+        name='get_ejeprueba_attach'),  
+    url('^get_ejecarpeta$', 'get_ejecarpeta', 
+        name='get_ejecarpeta'),  
+    url('^get_ejepruebap$', 'get_ejepruebap', 
+        name='get_ejepruebap'),  
 
     url('^guarda_peticion$', 'guarda_peticion', name='guarda_peticion'),
     url('^guarda_peticion_attach$', 'guarda_peticion_attach', 
@@ -32,12 +38,23 @@ urlpatterns = patterns('web.views',
     url('^guarda_prueba$', 'guarda_prueba', name='guarda_prueba'),
     url('^guarda_pprueba$', 'guarda_pprueba', 
         name='guarda_pprueba'),
+    url('^guarda_ejecarpeta$', 'guarda_ejecarpeta', 
+        name='guarda_ejecarpeta'),
+    url('^guarda_ejeprueba$', 'guarda_ejeprueba', 
+        name='guarda_ejeprueba'),
+    url('^guarda_ejeprueba_attach$', 'guarda_ejeprueba_attach', 
+        name='guarda_ejeprueba_attach'),
+    url('^guarda_ejepruebap$', 'guarda_ejepruebap', 
+        name='guarda_ejepruebap'),    
 
     url('^delete_peticion$', 'delete_peticion', name='delete_peticion'),
     url('^delete_defecto$', 'delete_defecto', name='delete_defecto'),
     url('^delete_carpeta$', 'delete_carpeta', name='delete_carpeta'),
     url('^delete_prueba$', 'delete_prueba', name='delete_prueba'),
-    url('^delete_pprueba$', 'delete_pprueba', name='delete_pprueba')
+    url('^delete_pprueba$', 'delete_pprueba', name='delete_pprueba'),
+    url('^delete_ejecarpeta$', 'delete_ejecarpeta', name='delete_ejecarpeta'),
+    url('^delete_ejeprueba$', 'delete_ejeprueba', name='delete_ejeprueba'),
+    url('^delete_ejepruebap$', 'delete_ejepruebap', name='delete_ejepruebap')
     
     
 )

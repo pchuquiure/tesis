@@ -167,3 +167,26 @@ class PasoCaso(models.Model):
     """
     paso_prueba = models.ForeignKey(PasoPrueba)
     caso_prueba = models.ForeignKey(CasoPrueba)
+
+class EjeCarpeta(models.Model):
+    nombre = models.CharField(u'Nombre', blank=False, max_length=45)    
+    fechaCreacion = models.DateTimeField(u'Fecha de creación', 
+        auto_now_add=True)
+
+class EjePrueba(models.Model):
+    carpeta = models.ForeignKey(EjeCarpeta)
+    peticion = models.ForeignKey(Peticion)
+    fechaCreacion = models.DateTimeField(u'Fecha de creación', 
+        auto_now_add=True)
+
+class EjePruebaPruebas(models.Model):    
+    ejeprueba = models.ForeignKey(EjePrueba)
+    prueba = models.ForeignKey(CasoPrueba)
+
+class EjeAdjunto(models.Model):    
+    tamano = models.CharField(u'Tamano', blank=False, max_length=45)
+    imagen = models.FileField('Archivo', max_length=455,
+        upload_to='pruebasp', null=True)
+    fechaCreacion = models.DateTimeField(u'Fecha de creación', 
+        auto_now_add=True)
+    ejepruebap = models.ForeignKey(EjePruebaPruebas)

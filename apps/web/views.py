@@ -519,3 +519,194 @@ def get_dfilter(request):
     json_obj = json.dumps(json_str, sort_keys=True, indent=4)
     response = HttpResponse(json_obj, mimetype="application/json")    
     return response
+
+@csrf_exempt
+def guarda_ejecarpeta(request):
+    if request.method.lower() == "post":
+        result = {'success':'true'}
+        id = request.POST.get('id', None)        
+        nombre = request.POST.get('nombre', None)
+
+        try:
+            if id:
+                carpeta = EjeCarpeta.objects.get(id=id)
+            else:
+                carpeta = EjeCarpeta()            
+            carpeta.nombre = nombre            
+            carpeta.save()
+        except Exception as e:
+            print e           
+            result = {'success':'false'}
+
+        json_obj = json.dumps(result, indent=4)
+        response = HttpResponse(json_obj, mimetype='text/html') 
+        return response
+
+def get_ejecarpeta(request):
+    json_str = []    
+    carpetas = EjeCarpeta.objects.all()
+    for carpeta in carpetas:
+        children = []
+        json_str.append({            
+            'text': carpeta.nombre,
+            'id': carpeta.pk,
+            'expanded': False,
+            'children': children            
+        })
+        epruebas = EjePrueba.objects.filter(carpeta=carpeta)
+        for prueba in epruebas:
+            children.append({
+                'text': prueba.nombre,
+                'id': "pp"+str(prueba.pk),
+                'expanded': False,
+                'leaf': True
+            })    
+    json_obj = json.dumps(json_str, sort_keys=True, indent=4)
+    response = HttpResponse(json_obj, mimetype="application/json")    
+    return response
+
+@csrf_exempt
+def guarda_ejeprueba(request):
+    if request.method.lower() == "post":
+        result = {'success':'true'}
+        carpeta = request.POST.get('carpeta', None)
+        peticion = request.POST.get('peticion', None)        
+
+        try:
+            if id:
+                eprueba = EjePrueba.objects.get(carpeta_pk=carpeta, 
+                    prueba_id=peticion)
+            else:
+                eprueba = EjePrueba()
+            
+            eprueba.carpeta_id = carpeta
+            eprueba.peticion_id = peticion       
+            eprueba.save()
+        except Exception as e:
+            print e           
+            result = {'success':'false'}
+
+        json_obj = json.dumps(result, indent=4)
+        response = HttpResponse(json_obj, mimetype='text/html') 
+        return response
+
+@csrf_exempt
+def delete_ejecarpeta(request):
+    if request.method.lower() == "post":
+        result = {'success':'true'}   
+        id = request.POST.get('id', None)
+        try:
+            carpeta = EjeCarpeta.objects.get(id=id)
+            carpeta.delete()
+        except Exception as e:
+            result = {'success':'false'}
+        json_obj = json.dumps(result, indent=4)
+        response = HttpResponse(json_obj, mimetype='text/html') 
+        return response
+
+@csrf_exempt
+def delete_ejeprueba(request):
+    if request.method.lower() == "post":
+        result = {'success':'true'}   
+        id = request.POST.get('id', None)
+        try:
+            eprueba = EjePrueba.objects.get(id=id)
+            eprueba.delete()
+        except Exception as e:
+            print e
+            result = {'success':'false'}
+        json_obj = json.dumps(result, indent=4)
+        response = HttpResponse(json_obj, mimetype='text/html') 
+        return response
+
+@csrf_exempt
+def guarda_ejeprueba_attach(request):
+    if request.method.lower() == "post":
+        result = {'success':'true'}        
+        id = request.POST.get('id', None)     
+        imagen = request.FILES['File']
+
+        try:
+            adjunto = EjeAdjunto()
+            adjunto.ejepruebap_id = id
+            adjunto.tamano = imagen.size
+            adjunto.imagen = imagen
+            adjunto.save()
+        except Exception as e:
+            print e
+            result = {'success':'false'}
+
+        json_obj = json.dumps(result, indent=4)
+        response = HttpResponse(json_obj, mimetype='text/html') 
+        return response
+
+def get_ejeprueba_attach(request):
+    json_str = []
+    id = request.GET.get('id', None)
+    adjuntos = EjeAdjunto.objects.filter(ejepruebap__pk=id)
+
+    for adjunto in adjuntos:        
+        try:
+            imagen = adjunto.imagen.name.split("/")[1]
+        except:
+            imagen = None
+
+        json_str.append({
+            'id': adjunto.pk,
+            'tamano': adjunto.tamano,
+            'file': imagen,
+            'fecha_creacion': str(adjunto.fechaCreacion)            
+        })
+    json_obj = json.dumps(json_str, sort_keys=True, indent=4)
+    response = HttpResponse(json_obj, mimetype="application/json")    
+    return response
+
+@csrf_exempt
+def guarda_ejepruebap(request):
+    if request.method.lower() == "post":
+        result = {'success':'true'}
+        prueba = request.POST.get('prueba', None)
+        eprueba = request.POST.get('eprueba', None)
+
+        try:
+            epruebap = EjePruebaPruebas()            
+            epruebap.prueba_id = prueba
+            epruebap.ejeprueba_id = eprueba
+            epruebap.save()
+        except Exception as e:
+            print e           
+            result = {'success':'false'}
+
+        json_obj = json.dumps(result, indent=4)
+        response = HttpResponse(json_obj, mimetype='text/html') 
+        return response
+
+@csrf_exempt
+def delete_ejepruebap(request):
+    if request.method.lower() == "post":
+        result = {'success':'true'}   
+        id = request.POST.get('id', None)
+        try:
+            eprueba = EjePruebaPruebas.objects.get(id=id)
+            eprueba.delete()
+        except Exception as e:
+            print e
+            result = {'success':'false'}
+        json_obj = json.dumps(result, indent=4)
+        response = HttpResponse(json_obj, mimetype='text/html') 
+        return response
+
+def get_ejepruebap(request):
+    json_str = []    
+    epruebasp = EjePruebaPruebas.objects.all()
+    for prueba in epruebasp:
+        children = []
+        json_str.append({            
+            'text': prueba.prueba.nombre,
+            'id': prueba.prueba.pk,
+            'expanded': False,
+            'children': children            
+        })         
+    json_obj = json.dumps(json_str, sort_keys=True, indent=4)
+    response = HttpResponse(json_obj, mimetype="application/json")    
+    return response
