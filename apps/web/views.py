@@ -698,25 +698,9 @@ def delete_ejepruebap(request):
         response = HttpResponse(json_obj, mimetype='text/html') 
         return response
 
-def get_ejepruebap(request):
-    json_str = []
-    eprueba = request.GET.get('ep', None)
-    epruebasp = EjePruebaPruebas.objects.filter(ejeprueba__id=eprueba)
-    for prueba in epruebasp:
-        children = []
-        json_str.append({            
-            'text': prueba.prueba.nombre,
-            'id': prueba.prueba.pk,
-            'expanded': False,
-            'children': children            
-        })         
-    json_obj = json.dumps(json_str, sort_keys=True, indent=4)
-    response = HttpResponse(json_obj, mimetype="application/json")    
-    return response
-
 def get_pruebas(request):
     json_str = []
-    eprueba = request.GET.get('ep', None)    
+    eprueba = request.GET.get('ep', None)
     pruebas = CasoPrueba.objects.all()
     if eprueba:
         for prueba in pruebas:       
@@ -726,9 +710,29 @@ def get_pruebas(request):
             except Exception as e:
                 print e
                 json_str.append({            
-                    'label': prueba.nombre,
-                    'id': prueba.pk
+                    'nombre': prueba.nombre,
+                    'ruta': prueba.ruta,
+                    'tipo': prueba.tipo,
+                    'estado': prueba.estado,
+                    'id':prueba.pk
                 })         
+    json_obj = json.dumps(json_str, sort_keys=True, indent=4)
+    response = HttpResponse(json_obj, mimetype="application/json")    
+    return response
+
+def get_ejepruebap(request):
+    json_str = []
+    eprueba = request.GET.get('ep', None)
+    epruebasp = EjePruebaPruebas.objects.filter(ejeprueba__id=eprueba)
+    for prueba in epruebasp:        
+        json_str.append({            
+            'nombre': prueba.prueba.nombre,
+            'ruta': prueba.prueba.ruta,
+            'tipo': prueba.prueba.tipo,
+            'estado': prueba.prueba.estado,
+            'id':prueba.prueba.pk,
+            'pk':prueba.pk
+        })         
     json_obj = json.dumps(json_str, sort_keys=True, indent=4)
     response = HttpResponse(json_obj, mimetype="application/json")    
     return response

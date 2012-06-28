@@ -7,7 +7,7 @@ Ext.define('AdjuntoModel',{
     ]
 });
 
-Ext.define('DefectoVinModel',{
+Ext.define('PruebaPModel',{
     extend: 'Ext.data.Model',
     fields: [            
         {name: 'peticion', mapping: 'peticion.label'},            
