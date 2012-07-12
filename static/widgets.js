@@ -32,6 +32,119 @@ var menu = {
     })
 }
 
+var storeChartOne = Ext.create('Ext.data.JsonStore', {
+    fields: ['name', 'data'],    
+    proxy: {
+        type: 'ajax',
+        url: '/get_chart_one'            
+    }    
+});
+storeChartOne.load();
+
+var chart2axes = {
+    type:"Numeric",
+    id:"axesTwo",
+    position:"left",            
+    grid:true,
+    decimals:1,
+    minimum:0    
+}
+
+var storeChartTwo = Ext.create('Ext.data.JsonStore', {
+    fields: ['name', 'data', 'total'],    
+    proxy: {
+        type: 'ajax',
+        url: '/get_chart_two'            
+    },
+    listeners: {
+        datachanged: function(self, eOpts) {
+            try {
+                console.log("change");             
+                chart2axes.maximum = self.data.items[0].data.total;
+            } catch(e) {};
+        }
+    }
+});
+storeChartTwo.load();
+
+var chart1 = Ext.create('Ext.chart.Chart', {    
+    width: 450,
+    height: 300,
+    margin: 30,
+    animate: true,
+    store: storeChartOne,    
+    theme: 'Base:gradients',
+    legend: {
+        position: 'right'
+    },
+    series: [{
+        type: 'pie',
+        field: 'data',
+        showInLegend: true,
+        tips: {
+            trackMouse: true,
+            width: 140,
+            height: 28,
+            renderer: function(storeItem, item) {                
+                this.setTitle(storeItem.get('data') + ' peticiones');
+            }
+        },
+        highlight: {
+            segment: {
+                margin: 20
+            }
+        },
+        label: {
+            field: 'name',
+            display: 'rotate',
+            contrast: true,
+            font: '18px Arial'
+        }
+    }]
+});
+
+var chart2 = Ext.create('Ext.chart.Chart', {
+    id: 'chartCmp',
+    width: 480,
+    height: 350,
+    animate: true,    
+    store: storeChartTwo,
+    axes: [
+        chart2axes,
+        {
+            type: 'Category',
+            position: 'bottom',
+            fields: ['name'],
+            title: 'N° Casos de prueba por usuario'
+        }
+    ],
+    series: [
+        {
+            type: 'column',
+            axis: 'left',
+            highlight: true,
+            tips: {
+              trackMouse: true,
+              width: 140,
+              height: 28,
+              renderer: function(storeItem, item) {
+                this.setTitle(storeItem.get('data') + ' casos de prueba');
+              }
+            },
+            label: {
+              display: 'insideEnd',
+              'text-anchor': 'middle',
+                field: 'data',
+                renderer: Ext.util.Format.numberRenderer('0'),
+                orientation: 'vertical',
+                color: '#333'
+            },
+            xField: 'name',
+            yField: 'data'
+        }
+    ]
+});
+
 var windows = {
     nuevaPeticion: Ext.create('widget.window', {        
         height: 290,
@@ -237,4 +350,48 @@ var windows = {
         }
         ]
     }),
+    grafico_up: Ext.create('widget.window', {
+        id:'win-grafico-up',
+        height: 400,
+        width: 500,
+        closeAction: 'hide',
+        title: 'N° Peticiones por usuario',
+        closable: true,
+        plain: false,
+        resizable:false,           
+        border:0,
+        layout: {
+            type: 'border',
+            padding: 2
+        },
+        items: [        
+        {
+            region: 'center',            
+            border:0,
+            items: [chart1]
+        }
+        ]
+    }),
+    grafico_ucp: Ext.create('widget.window', {
+        id:'win-grafico-ucp',
+        height: 400,
+        width: 500,
+        closeAction: 'hide',
+        title: 'N° Casos de prueba por usuario',
+        closable: true,
+        plain: false,
+        resizable:false,           
+        border:0,
+        layout: {
+            type:"fit",
+            padding: 2
+        },
+        items: [        
+        {
+            region: 'center',            
+            border:0,
+            items: [chart2]
+        }
+        ]
+    })
 }

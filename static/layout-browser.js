@@ -142,6 +142,12 @@ Ext.onReady(function(){
             handler: function() {
                 peticionStore.load();
             }
+        },'-',{
+            text:"Gráficos",
+            handler: function() {
+                storeChartOne.load();
+                windows.grafico_up.show();
+            }
         }],
         listeners : {
             itemdblclick: function(self, record, number, index, eOpts) {                
@@ -370,6 +376,12 @@ Ext.onReady(function(){
                 } else {
                     alert('Debes seleccionar una prueba');
                 }
+            }
+        },'-',{
+            text:"Gráficos",
+            handler: function() {                               
+                storeChartTwo.load();                
+                windows.grafico_ucp.show();
             }
         }
         ]

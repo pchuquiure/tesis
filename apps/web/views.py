@@ -736,3 +736,37 @@ def get_ejepruebap(request):
     json_obj = json.dumps(json_str, sort_keys=True, indent=4)
     response = HttpResponse(json_obj, mimetype="application/json")    
     return response
+
+def get_chart_one(request):
+    """ Cantidad Peticiones x usuario """
+    json_str = []
+    
+    usuarios = Usuario.objects.all()
+    for usuario in usuarios:
+        peticiones = Peticion.objects.filter(usuario=usuario)
+        json_str.append({            
+            'name': u'%s %s' % (usuario.persona.nombre,
+                usuario.persona.apellidos),
+            'data': len(peticiones)
+        })         
+    json_obj = json.dumps(json_str, sort_keys=True, indent=4)
+    response = HttpResponse(json_obj, mimetype="application/json")    
+    return response
+
+def get_chart_two(request):
+    """ Cantidad Peticiones x usuario """
+    json_str = []
+    
+    usuarios = Usuario.objects.all()
+    for usuario in usuarios:
+        peticiones = CasoPrueba.objects.filter(usuario=usuario)
+        total = CasoPrueba.objects.all()
+        json_str.append({            
+            'name': u'%s %s' % (usuario.persona.nombre,
+                usuario.persona.apellidos),
+            'data': len(peticiones),
+            'total': len(total)
+        })         
+    json_obj = json.dumps(json_str, sort_keys=True, indent=4)
+    response = HttpResponse(json_obj, mimetype="application/json")    
+    return response
